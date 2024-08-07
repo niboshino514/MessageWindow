@@ -10,14 +10,32 @@
 
 namespace
 {
+	// キャラクター名サイズ
+	constexpr int kCharacterNameFontSize = 30;
+
+	// キャラクター名の最大文字数
+	constexpr int kCharacterNameMax = 7;
+
+	// キャラクター名の文字幅
+	constexpr int kCharacterNameWidth = 5;
+
+	// キャラクター名フォントタイプ
+	constexpr int kCharacterNameFontType = 1;
+
+	// キャラクター名のフォントカラー
+	constexpr int kCharacterNameColor = 0xffffff;
+
+
 	// テキストスピード
 	constexpr int kTextSpeed = 5;
 
 	// 文字の大きさ
 	constexpr int kFontScale = 30;
 
+
+
 	// フォント
-	struct Font
+	struct FontData
 	{
 		// ファイルパス
 		const char* FilePath = "";
@@ -27,7 +45,7 @@ namespace
 	};
 
 	// フォント
-	const std::vector<Font> kFont =
+	const std::vector<FontData> kFontData =
 	{
 		{"Data/Font/font1.ttf","DotGothic16"},
 		{"Data/Font/font2.otf","07やさしさアンチック"},
@@ -48,8 +66,17 @@ namespace
 		// テキストのフォントカラー
 		int color = 0xffffff;
 
+		// キャラクター名
+		const char* characterName = "";
+
+		// テキストの文字幅
+		int textWidth = 0;
+
 		// テキストスピード
 		int textSpeed = kTextSpeed;
+
+		// テキストサイズからの行間
+		float lineSpace = 0.4f;
 
 		// テキストサイズ
 		float textSize = kFontScale;
@@ -66,7 +93,7 @@ namespace
 	{
 
 		{ "気持ちいいわね。\n毎回、昼間に出発して悪霊が少ないから、夜に出てみたんだけど……どこに行っていいかわからないわ。暗くて。", 0},
-		{ "そうなのよね～。お化けも出るし、たまんないわ。", 1 ,true},
+		{ "そうなのよね～。お化けも出るし、たまんないわ。", 1 ,true,0xffffff,"???"},
 		{ "って、あんた誰？", 0 },
 		{ "さっき会ったじゃない。あんた、もしかして鳥目？", 1,true},
 		{ "人は暗いところでは物が良く見えないのよ。", 0 },
@@ -83,7 +110,6 @@ namespace
 // メッセージウィンドウ
 namespace Window
 {
-
 	// メッセージウィンドウの縦幅
 	constexpr float kMessageWindowHeight = 200.0f;
 
@@ -127,15 +153,37 @@ namespace Character
 	Vec2 kRightCenterPosHide = Vec2();
 
 
-
-
-	// キャラクターのグラフィックファイルパス
-	const std::vector<const char*> kGraphFilePath =
+	// キャラクターの情報
+	struct CharacterData
 	{
-		"Data/Character/Character1.png",
-		"Data/Character/Character2.png",
-		"Data/Character/Character3.png"
+		// キャラクターのグラフィックハンドル
+		const char* graphFilePath = "";
+
+		// キャラクター名
+		const char* name = "";
+
+		// キャラクターの拡大率
+		float scale = 1.0f;
+
+		// キャラクターの横分割数
+		int divX = 1;
 	};
+	
+
+
+	// キャラクターデータ
+	const std::vector<CharacterData> kCharacterData =
+	{
+		{"Data/Character/Character1.png","霊夢"},
+
+		{"Data/Character/Character2.png","ルーミア"},
+
+		{"Data/Character/Character3.png"},
+
+	};
+
+
+
 
 }
 
@@ -178,13 +226,26 @@ void MessageWindow::Init()
 		// ウィンドウの右下座標を設定
 		m_windowInfo.rightBottom.x = Game::kScreenWidth - Window::kMessageWindowEdge;
 		m_windowInfo.rightBottom.y = windowCenterPos.y + (Window::kMessageWindowHeight * 0.5f);
+
+		// キャラクター名の幅を設定
+		const float characterNameFontSize = kCharacterNameFontSize * 1.2f;
+
+		// キャラクター名を表示するウィンドウの左上座標を設定
+		m_windowInfo.nameLeftTop.x = m_windowInfo.leftTop.x;
+		m_windowInfo.nameLeftTop.y = m_windowInfo.leftTop.y - characterNameFontSize;
+
+		
+		m_windowInfo.nameWindowWidth = (kCharacterNameWidth + characterNameFontSize) * (kCharacterNameMax + 1);
+
+		m_windowInfo.nameRightBottom.x = m_windowInfo.nameLeftTop.x + m_windowInfo.nameWindowWidth;
+		m_windowInfo.nameRightBottom.y = m_windowInfo.nameLeftTop.y + characterNameFontSize;
 	}
 
 
 	// テキスト情報の初期化
 	{
 		// テキストスピードをフレームカウントに代入
-		m_textInfo.frameCount = kTextSpeed;
+		m_textInfo.frameCount = kTextElement[0].textSpeed;
 
 		// テキスト番号を0にする
 		m_textInfo.currentNumber = 0;
@@ -205,7 +266,7 @@ void MessageWindow::Init()
 		// フォント関連
 		{
 
-			for (auto& font : kFont)
+			for (auto& font : kFontData)
 			{
 				// フォントの保存
 				m_textInfo.fontHandle.push_back(EvoLib::Load::LoadFont(font.FilePath, font.FontName, kFontScale));
@@ -222,8 +283,6 @@ void MessageWindow::Init()
 
 	// キャラクター情報の初期化
 	{
-
-
 		// 座標関連
 		{
 			// キャラクターの中心座標を設定
@@ -251,19 +310,23 @@ void MessageWindow::Init()
 		
 		// キャラクターのグラフィックハンドルの取得
 		{
-			m_characterInfo.resize(static_cast<int>(Character::kGraphFilePath.size()));
+			m_characterInfo.resize(static_cast<int>(Character::kCharacterData.size()));
 
 			for (int i = 0; i < static_cast<int>(m_characterInfo.size()); i++)
 			{
-				m_characterInfo[i].graphicHandle = LoadGraph(Character::kGraphFilePath[i]);
+				m_characterInfo[i].graphicHandle = LoadGraph(Character::kCharacterData[i].graphFilePath);
+
+				// キャラクターの拡大率を設定
+				m_characterInfo[i].scale = Character::kCharacterData[i].scale;
+
+				// キャラクター名を設定
+				m_characterInfo[i].name = kTextElement[i].characterName;
 			}
 		}
 
 		// 一番はじめに表示するキャラクターの座標を設定
 		InitCharacterPos(kTextElement[m_textInfo.currentNumber].isRightDraw);
-
 	}
-
 }
 
 void MessageWindow::Update()
@@ -288,6 +351,8 @@ void MessageWindow::Draw()
 
 
 	DrawMessageText();
+
+	DrawCharacterNameText();
 }
 
 void MessageWindow::UpdateTextDisplay()
@@ -407,9 +472,11 @@ void MessageWindow::DrawMessageText()
 	// テキストの色
 	const int color = kTextElement[m_textInfo.currentNumber].color;
 
-	const float lineSpace = kTextElement[m_textInfo.currentNumber].textSize * 0.4f; // 行間
+	// 行間
+	const float lineSpace = kTextElement[m_textInfo.currentNumber].textSize * kTextElement[m_textInfo.currentNumber].lineSpace; // 行間
 
-
+	// 改行したかどうか
+	bool isLineBreak = false;
 
 	for (int i = 0; i < m_textInfo.dispCharCount; i++)
 	{
@@ -427,6 +494,9 @@ void MessageWindow::DrawMessageText()
 			textPos.y += lineSpace; // 行間を加算
 
 			currentByte += 1; // 改行文字をスキップ
+
+			isLineBreak = true;
+
 			continue;
 		}
 		else if (IsTextInWindow(textPos, fontHandle))
@@ -434,8 +504,26 @@ void MessageWindow::DrawMessageText()
 			textPos.x = m_textInfo.textPos.x; // 行の先頭に戻る
 			textPos.y += GetFontSizeToHandle(fontHandle); // 行の高さを加算
 			textPos.y += lineSpace; // 行間を加算
+
+			isLineBreak = true;
+
+			continue;
 		}
-		else if (charData < 0x80) {
+		else
+		{
+			if (i != 0 && !isLineBreak)
+			{
+				// テキストの横幅を追加
+				textPos.x += kTextElement[m_textInfo.currentNumber].textWidth;
+			}
+
+		
+		}
+		
+
+
+		if (charData < 0x80) 
+		{
 			size = 1;
 		}
 		else {
@@ -456,14 +544,96 @@ void MessageWindow::DrawMessageText()
 		shakePos.x += shakeX;
 		shakePos.y += shakeY;
 
-		
-
 		// 文字列の描画
 		DrawStringFToHandle(shakePos.x, shakePos.y, m_textInfo.m_temp.substr(currentByte, size).c_str(), color, fontHandle);
 
+		
 		textPos.x += GetDrawStringWidth(m_textInfo.m_temp.substr(currentByte, size).c_str(), size, fontHandle);
 
 		currentByte += size;
+
+		isLineBreak = false;
+	}
+}
+
+void MessageWindow::DrawCharacterNameText()
+{
+	
+
+	int currentByte = 0;
+
+	// フォントハンドルの決定（例：特定の文字位置でフォントを変更する）
+	const int fontHandle = m_textInfo.fontHandle[kCharacterNameFontType];
+
+	// テキストの色
+	const int color = kCharacterNameColor;
+
+
+	// 文字列を挿入する
+	std::string temp = kTextElement[m_textInfo.currentNumber].characterName;
+
+	// 文字列が空の場合、キャラクター名を代入する
+	if (temp == "")
+	{
+		temp = Character::kCharacterData[kTextElement[m_textInfo.currentNumber].characterNumber].name;
+	}
+
+
+
+	// 表示する文字列を全て表示したら、表示する文字数を文字列の長さにする
+	const int dispCharCount = static_cast<int>(temp.size());
+
+
+	Vec2 nameWindowCenterPos = Vec2();
+	nameWindowCenterPos.x = m_windowInfo.nameLeftTop.x + (m_windowInfo.nameWindowWidth * 0.5f);
+	nameWindowCenterPos.y = m_windowInfo.nameLeftTop.y;
+
+	float textWidth = GetDrawStringWidthToHandle(temp.c_str(), dispCharCount, fontHandle);
+	textWidth *= 1.1f;
+
+
+	// テキストの座標
+	Vec2 textPos = Vec2();
+	textPos.x = nameWindowCenterPos.x - (textWidth * 0.5f);
+	textPos.y = nameWindowCenterPos.y;
+
+
+	
+	for (int i = 0; i < dispCharCount; i++)
+	{
+		if (currentByte >= temp.size()) break;
+		unsigned char charData = temp[currentByte];
+		int size = 0;
+
+
+		if (i != 0)
+		{
+			// テキストの横幅を加算
+			textPos.x += kCharacterNameWidth;
+		}
+
+
+		if (charData < 0x80)
+		{
+			size = 1;
+		}
+		else {
+			size = 2;
+		}
+
+	
+
+
+
+		// 文字列の描画
+		DrawStringFToHandle(textPos.x, textPos.y, temp.substr(currentByte, size).c_str(), color, fontHandle);
+
+
+		textPos.x += GetDrawStringWidth(temp.substr(currentByte, size).c_str(), size, fontHandle);
+
+		currentByte += size;
+
+	
 	}
 }
 
@@ -503,14 +673,18 @@ void MessageWindow::DrawMessageWindow()
 
 	// メッセージウィンドウの描画
 	DrawBoxAA(m_windowInfo.leftTop.x, m_windowInfo.leftTop.y, m_windowInfo.rightBottom.x, m_windowInfo.rightBottom.y, 0xffffff, true);
-	
+
+	// キャラクター名を表示するウィンドウの描画
+	DrawBoxAA(m_windowInfo.nameLeftTop.x, m_windowInfo.nameLeftTop.y, m_windowInfo.nameRightBottom.x, m_windowInfo.nameRightBottom.y, 0xffffff, true);
+
 	// 描画ブレンドモードをノーブレンドにする
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
-
-
 	// メッセージウィンドウの描画
 	DrawBoxAA(m_windowInfo.leftTop.x, m_windowInfo.leftTop.y, m_windowInfo.rightBottom.x, m_windowInfo.rightBottom.y, 0xffffff, false);
+
+	// キャラクター名を表示するウィンドウの描画
+	DrawBoxAA(m_windowInfo.nameLeftTop.x, m_windowInfo.nameLeftTop.y, m_windowInfo.nameRightBottom.x, m_windowInfo.nameRightBottom.y, 0xffffff, false);
 }
 
 void MessageWindow::InitCharacterPos(const bool& isRightDraw)

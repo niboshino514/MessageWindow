@@ -56,6 +56,15 @@ public:
 
 		// ウィンドウの右下座標
 		Vec2 rightBottom = Vec2();
+
+		// キャラクター名を表示するウィンドウの左上座標
+		Vec2 nameLeftTop = Vec2();
+
+		// キャラクター名を表示するウィンドウの右下座標
+		Vec2 nameRightBottom = Vec2();
+
+		// キャラクター名を表示するウィンドウの横幅
+		int nameWindowWidth = 0;
 	};
 
 	// キャラクター情報
@@ -63,6 +72,12 @@ public:
 	{
 		// キャラクターグラフィックハンドル
 		int graphicHandle = -1;
+
+		// キャラクター名
+		std::string name = "";
+
+		// キャラクター拡大率
+		float scale = 1.0f;
 
 		// キャラクターの座標
 		Vec2 pos = Vec2();
@@ -95,6 +110,8 @@ private:
 	/// </summary>
 	void DrawMessageText();
 
+	void DrawCharacterNameText();
+
 	/// <summary>
 	/// 文字列のサイズを取得
 	/// </summary>
@@ -113,6 +130,8 @@ private:
 	/// メッセージウィンドウの描画
 	/// </summary>
 	void DrawMessageWindow();
+
+	
 
 	/// <summary>
 	/// キャラクターの初期位置設定
