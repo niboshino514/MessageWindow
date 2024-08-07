@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ソース ファイル\scene">
+      <UniqueIdentifier>{c18ec56a-eeb3-46ee-b677-5e3e79af766f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\scene">
+      <UniqueIdentifier>{7df71357-5373-432b-96ac-735d4804b6b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\setting">
+      <UniqueIdentifier>{0d2f62e7-494c-4062-8cbd-821aabee3018}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\setting">
+      <UniqueIdentifier>{26cec8b7-f465-41f4-bbde-ec35228952f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Evolib">
+      <UniqueIdentifier>{fd9e61ea-6255-42c9-8119-32c7777db920}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Evolib">
+      <UniqueIdentifier>{dcfca034-801e-413b-8790-9c2e742f2a6a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneMain.cpp">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneBase.cpp">
+      <Filter>ソース ファイル\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Pad.cpp">
+      <Filter>ソース ファイル\setting</Filter>
+    </ClCompile>
+    <ClCompile Include="Vec2.cpp">
+      <Filter>ソース ファイル\setting</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageWindow.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\Calculation.cpp">
+      <Filter>ソース ファイル\Evolib</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\Collision.cpp">
+      <Filter>ソース ファイル\Evolib</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\Convert.cpp">
+      <Filter>ソース ファイル\Evolib</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\Draw.cpp">
+      <Filter>ソース ファイル\Evolib</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\EvoLib.cpp">
+      <Filter>ソース ファイル\Evolib</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\File.cpp">
+      <Filter>ソース ファイル\Evolib</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\FPS.cpp">
+      <Filter>ソース ファイル\Evolib</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\Load.cpp">
+      <Filter>ソース ファイル\Evolib</Filter>
+    </ClCompile>
+    <ClCompile Include="Font.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SceneManager.h">
+      <Filter>ヘッダー ファイル\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneMain.h">
+      <Filter>ヘッダー ファイル\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneBase.h">
+      <Filter>ヘッダー ファイル\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Vec2.h">
+      <Filter>ヘッダー ファイル\setting</Filter>
+    </ClInclude>
+    <ClInclude Include="Pad.h">
+      <Filter>ヘッダー ファイル\setting</Filter>
+    </ClInclude>
+    <ClInclude Include="game.h">
+      <Filter>ヘッダー ファイル\setting</Filter>
+    </ClInclude>
+    <ClInclude Include="MessageWindow.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\Load.h">
+      <Filter>ヘッダー ファイル\Evolib</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\Calculation.h">
+      <Filter>ヘッダー ファイル\Evolib</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\Collision.h">
+      <Filter>ヘッダー ファイル\Evolib</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\Convert.h">
+      <Filter>ヘッダー ファイル\Evolib</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\Draw.h">
+      <Filter>ヘッダー ファイル\Evolib</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\EvoLib.h">
+      <Filter>ヘッダー ファイル\Evolib</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\File.h">
+      <Filter>ヘッダー ファイル\Evolib</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\FPS.h">
+      <Filter>ヘッダー ファイル\Evolib</Filter>
+    </ClInclude>
+    <ClInclude Include="Sort.h">
+      <Filter>ヘッダー ファイル\Evolib</Filter>
+    </ClInclude>
+    <ClInclude Include="Font.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
