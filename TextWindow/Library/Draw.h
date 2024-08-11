@@ -67,5 +67,7 @@ namespace EvoLib
 		/// <param name="color">カラーの値(最大値:1.0f)</param>
 		static void DrawCube3D_EvoLib(const VECTOR& centerPos, const VECTOR& oneSideLength, int alphaValue = 255, int lineThickness = 1, Color color = { 0.0f,1.0f, 0.0f });
 
+
+		
 	};
 }

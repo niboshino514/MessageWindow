@@ -54,6 +54,20 @@ EvoLib::Load::DivGraphInfo EvoLib::Load::LoadDivGraph_EvoLib(const char* filePat
 
 std::vector<int> EvoLib::Load::LoadDivGraph_EvoLib_Revision(const char* filePath, const DivNum& div)
 {
+    // ファイルが存在しない場合、エラーメッセージを表示
+    if(!EvoLib::File::IsFileExist(filePath))
+    {
+		// ファイルが存在しない場合、エラーメッセージを表示
+		std::string errorMsg = "[" + static_cast<std::string>(filePath) + "]" +
+			" のグラフィックファイルは存在しないようです。";
+
+		// ファイル読込エラー処理
+		EvoLib::Assert::ErrorMessageBox(errorMsg);
+	}
+
+
+
+
     int wide = 0;       // グラフィックの横幅
     int height = 0;     // グラフィックの縦幅
     int graphic = -1;   // グラフィックの代入
@@ -87,6 +101,13 @@ std::vector<int> EvoLib::Load::LoadDivGraph_EvoLib_Revision(const char* filePath
             // グラフィックを代入
             graphHandle.push_back(handle[i]);
         }
+
+
+        
+
+
+
+
 
         // メモリの開放
         delete[] handle;

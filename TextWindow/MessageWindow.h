@@ -2,10 +2,57 @@
 #include <string>
 #include "Vec2.h"
 #include <vector>
+#include <memory>
 
+class MessageTextLoader;
 
 class MessageWindow
 {
+public:
+
+	// メッセージ要素
+	struct MessageElement
+	{
+		// 話す文章
+		std::string talkText = "";
+
+		// 話すキャラクター番号
+		int talkCharacterNo = 0;
+
+		// キャラクターの表情番号
+		int talkFaceNo = 0;
+
+		// 右端に表示するかどうか
+		bool isRight = false;
+
+		// 反転描画するかどうか
+		bool isFlip = false;
+
+		// テキストのフォントカラー
+		int fontColor = 0xffffff;
+
+		// 文字を震わせるかどうか
+		bool isShake = false;
+
+		// テキストスピード
+		int drawCharFrame = 0;
+
+		// フォントタイプ
+		int fontType = 0;
+
+		// テキストの文字幅
+		int charInterval = 0;
+
+		// テキストサイズからの行間
+		float lineInterval = 0.4f;
+
+		// キャラクター名カラー
+		int characterNameColor = 0;
+
+		// キャラクター名
+		std::string characterName = "";
+	};
+
 public:
 	MessageWindow();
 	virtual ~MessageWindow();
@@ -14,11 +61,8 @@ public:
 	void Update();
 	void Draw();
 
-
-	
-
-	// テキスト情報
-	struct TextInfo
+	// テキスト表示情報
+	struct TextDisplayInfo
 	{
 		// テキストの座標
 		Vec2 textPos = Vec2(0, 0);
@@ -44,12 +88,24 @@ public:
 		// 表示する文字数
 		int dispCharCount = 0;
 
+		// フォントサイズ
+		int fontSize = 0;
+
 		// フォントハンドル
 		std::vector<int> fontHandle;
+
+	
+
+		// キャラクター名のフォントハンドル
+		int nameFontHandle = 0;
+
+		// キャラクター名の文字横間隔
+		int characterNameCharInterval = 0;
+
 	};
 
-	// ウィンドウ情報
-	struct WindowInfo
+	// メッセージウィンドウ情報
+	struct MessageWindowInfo
 	{
 		// ウィンドウの左上座標
 		Vec2 leftTop = Vec2();
@@ -67,11 +123,11 @@ public:
 		int nameWindowWidth = 0;
 	};
 
-	// キャラクター情報
-	struct CharacterInfo
+	// キャラクター表示情報
+	struct CharacterDisplayInfo
 	{
 		// キャラクターグラフィックハンドル
-		int graphicHandle = -1;
+		std::vector<int> graphicHandle;
 
 		// キャラクター名
 		std::string name = "";
@@ -79,21 +135,32 @@ public:
 		// キャラクター拡大率
 		float scale = 1.0f;
 
+		// 画像を右向きにするかどうか
+		bool isGraphRight = false;
+
+
+		// 右側に表示されているかどうか
+		bool isRightDraw = false;
+
 		// キャラクターの座標
 		Vec2 pos = Vec2();
+
+		// キャラクターのオフセット値
+		Vec2 centerPosOffset = Vec2();
 
 		// ターゲット座標
 		Vec2 targetPos = Vec2();
 
 		// 移動量
 		Vec2 vec = Vec2();
-
-		// 右側に表示されているかどうか
-		bool isRightDraw = false;
 	};
 
 
 private:
+
+
+
+
 
 	/// <summary>
 	/// テキスト表示進行
@@ -152,25 +219,36 @@ private:
 
 	void DrawCharacter();
 
+	/// <summary>
+	/// キャラクターを反転させるかどうか
+	/// </summary>
+	/// <param name="characterNumber">キャラクターナンバー</param>
+	/// <param name="textNumber">テキストナンバー</param>
+	/// <returns>反転フラグを返す</returns>
+	bool IsFlipCharacter(const int& characterNumber, const int& textNumber);
+
 private:
 
 	// テキスト情報
-	TextInfo m_textInfo;
+	TextDisplayInfo m_textInfo;
 
 	// ウィンドウ情報
-	WindowInfo m_windowInfo;
+	MessageWindowInfo m_windowInfo;
 
 
 	// キャラクター情報
-	std::vector<CharacterInfo> m_characterInfo;
-
-
-
-
+	std::vector<CharacterDisplayInfo> m_characterInfo;
 
 	// キャラクターの移動速度
-	float m_characterMoveSpeed = 0.0f;
+	float m_moveSpeed;
 
+	// キャラクターが話していない時の透明度
+	int m_graphNotSpeakAlpha;
 
+	// メッセージ要素
+	std::vector<MessageElement> m_messageElement;
+
+	
+	std::shared_ptr<MessageTextLoader> m_pMessageTextLoader;
 };
 

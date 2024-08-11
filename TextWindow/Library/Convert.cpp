@@ -416,3 +416,71 @@ Rect EvoLib::Convert::PosToRect(const Vec2& pos, const Vec2& size)
     return rect;
 }
 
+bool EvoLib::Convert::ConvertStringToBool(const std::string& str)
+{
+    bool isFlag = false;
+
+    if (str == "FALSE" ||
+        str == "false")
+    {
+        isFlag = false;
+    }
+    else if (
+        str == "TRUE" ||
+        str == "true")
+    {
+        isFlag = true;
+    }
+    else
+    {
+
+        EvoLib::Assert::ErrorMessageBox("ConvertStringToBoolで変換する際、スペルミスがあったようです。");
+    }
+
+    return isFlag;
+}
+
+std::string EvoLib::Convert::WStringToString(const std::wstring& wstr)
+{
+    // wstring → SJIS
+    int iBufferSize = WideCharToMultiByte(CP_OEMCP, 0, wstr.c_str()
+        , -1, (char*)NULL, 0, NULL, NULL);
+
+    // バッファの取得
+    CHAR* cpMultiByte = new CHAR[iBufferSize];
+
+    // wstring → SJIS
+    WideCharToMultiByte(CP_OEMCP, 0, wstr.c_str(), -1, cpMultiByte
+        , iBufferSize, NULL, NULL);
+
+    // stringの生成
+    std::string oRet(cpMultiByte, cpMultiByte + iBufferSize - 1);
+
+    // バッファの破棄
+    delete[] cpMultiByte;
+
+    // 変換結果を返す
+    return(oRet);
+}
+
+std::wstring EvoLib::Convert::StringToWString(const std::string& str)
+{
+    // string → wstring
+    int iBufferSize = MultiByteToWideChar(CP_OEMCP, 0, str.c_str(), -1, nullptr, 0);
+
+    // バッファの取得
+    WCHAR* wpWideChar = new WCHAR[iBufferSize];
+
+    // string → wstring
+    MultiByteToWideChar(CP_OEMCP, 0, str.c_str(), -1, wpWideChar, iBufferSize);
+
+    // wstringの生成
+    std::wstring oRet(wpWideChar, wpWideChar + iBufferSize - 1);
+
+    // バッファの破棄
+    delete[] wpWideChar;
+
+    // 変換結果を返す
+    return oRet;
+}
+

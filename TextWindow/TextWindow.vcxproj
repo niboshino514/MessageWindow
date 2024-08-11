@@ -113,6 +113,7 @@
       <AdditionalIncludeDirectories>C:\DxLib_VC\プロジェクトに追加すべきファイル_VC用;$(ProjectDir)Library;$(ProjectDir)include;$(ProjectDir)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -150,6 +151,7 @@
     <ClCompile Include="Library\FPS.cpp" />
     <ClCompile Include="Library\Load.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MessageTextLoader.cpp" />
     <ClCompile Include="MessageWindow.cpp" />
     <ClCompile Include="Pad.cpp" />
     <ClCompile Include="SceneBase.cpp" />
@@ -168,6 +170,7 @@
     <ClInclude Include="Library\File.h" />
     <ClInclude Include="Library\FPS.h" />
     <ClInclude Include="Library\Load.h" />
+    <ClInclude Include="MessageTextLoader.h" />
     <ClInclude Include="MessageWindow.h" />
     <ClInclude Include="Pad.h" />
     <ClInclude Include="SceneBase.h" />

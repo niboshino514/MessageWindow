@@ -194,6 +194,28 @@ namespace EvoLib
 		/// <param name="size">ƒTƒCƒY</param>
 		/// <returns>‹éŒ`î•ñ</returns>
 		static Rect PosToRect(const Vec2& pos, const Vec2& size);
+
+		/// <summary>
+		/// stringŒ^‚Ì^—’l‚ğboolŒ^‚É•ÏŠ·
+		/// </summary>
+		/// <param name="str">stringŒ^‚Ì^—’l</param>
+		/// <returns>boolŒ^‚Ì^—’l</returns>
+		static bool ConvertStringToBool(const std::string& str);
+
+		/// <summary>
+		/// wstringŒ^‚ğstringŒ^‚É•ÏŠ·
+		/// </summary>
+		/// <param name="wstr">wstringŒ^‚Ì•¶š</param>
+		/// <returns>stringŒ^‚É•ÏŠ·‚³‚ê‚½•¶š</returns>
+		static std::string WStringToString(const std::wstring& wstr);
+
+		/// <summary>
+		/// stringŒ^‚ğwstringŒ^‚É•ÏŠ·
+		/// </summary>
+		/// <param name="str">stringŒ^‚Ì•¶š</param>
+		/// <returns>wstringŒ^‚É•ÏŠ·‚³‚ê‚½•¶š</returns>
+		static std::wstring StringToWString(const std::string& str);
+
 	};
 }
 

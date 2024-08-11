@@ -5,141 +5,25 @@
 #include "game.h"
 #include <cassert>
 #include "EvoLib.h"
-
+#include "MessageTextLoader.h"
 
 
 namespace
 {
-	// キャラクター名サイズ
-	constexpr int kCharacterNameFontSize = 30;
+	// キャラクターの移動速度
+	constexpr float kCharcterMoveSpeed = 0.1f;
 
-	// キャラクター名の最大文字数
-	constexpr int kCharacterNameMax = 7;
+	// キャラクターグラフィックY座標調整値
+	constexpr float kCharacterGraphPosY = 100.0f;
 
-	// キャラクター名の文字幅
-	constexpr int kCharacterNameWidth = 5;
-
-	// キャラクター名フォントタイプ
-	constexpr int kCharacterNameFontType = 1;
-
-	// キャラクター名のフォントカラー
-	constexpr int kCharacterNameColor = 0xffffff;
-
-
-	// テキストスピード
-	constexpr int kTextSpeed = 5;
-
-	// 文字の大きさ
-	constexpr int kFontScale = 30;
-
-
-
-	// フォント
-	struct FontData
-	{
-		// ファイルパス
-		const char* FilePath = "";
-
-		// フォント名
-		const char* FontName = "";
-	};
-
-	// フォント
-	const std::vector<FontData> kFontData =
-	{
-		{"Data/Font/font1.ttf","DotGothic16"},
-		{"Data/Font/font2.otf","07やさしさアンチック"},
-	};
-
-	// テキスト要素
-	struct TextElement
-	{
-		// テキスト
-		const char* text = "";
-
-		// キャラクター番号
-		int characterNumber = 0;
-
-		// 右端に表示するかどうか
-		bool isRightDraw = false;
-
-		// テキストのフォントカラー
-		int color = 0xffffff;
-
-		// キャラクター名
-		const char* characterName = "";
-
-		// テキストの文字幅
-		int textWidth = 0;
-
-		// テキストスピード
-		int textSpeed = kTextSpeed;
-
-		// テキストサイズからの行間
-		float lineSpace = 0.4f;
-
-		// テキストサイズ
-		float textSize = kFontScale;
-
-		// フォントタイプ
-		int fontType = 1;
-
-		// 文字を震わせるかどうか
-		bool isVibration = false;
-	};
-
-	// テキスト要素
-	const std::vector<TextElement> kTextElement =
-	{
-
-		{ "気持ちいいわね。\n毎回、昼間に出発して悪霊が少ないから、夜に出てみたんだけど……どこに行っていいかわからないわ。暗くて。", 0},
-		{ "そうなのよね～。お化けも出るし、たまんないわ。", 1 ,true,0xffffff,"???"},
-		{ "って、あんた誰？", 0 },
-		{ "さっき会ったじゃない。あんた、もしかして鳥目？", 1,true},
-		{ "人は暗いところでは物が良く見えないのよ。", 0 },
-		{ "あら？　夜しか活動しない人も見たことある気がするわ。", 1,true },
-		{ "それは取って食べたりしてもいいのよ。", 0 },
-		{ "そーなのかー。", 1,true },
-		{ "で、邪魔なんですけど。", 0},
-		{ "目の前が取って食べれる人類？", 1,true },
-		{ "良薬は口に苦しって言葉知ってる？", 0},
-		{ "良薬っていっても、飲んでみなけりゃわかんないけどね。", 0},
-	};
+	// キャラクターグラフィックX座標調整値
+	constexpr float kCharacterGraphPosX = 0.0f;
 }
 
-// メッセージウィンドウ
-namespace Window
-{
-	// メッセージウィンドウの縦幅
-	constexpr float kMessageWindowHeight = 200.0f;
-
-	// 画面端からメッセージウィンドウの横幅
-	constexpr float kMessageWindowEdge = 300.0f;
-	
-	// 画面下からメッセージウィンドウまでの高さ
-	constexpr float kMessageWindowHeightFromBottom = 100.0f;
-}
 
 // キャラクター
 namespace Character
 {
-	// キャラクターの縦幅
-	constexpr float kCharacterHeight = 600.0f;
-
-	// キャラクターの横幅
-	constexpr float kCharacterWidth = 400.0f;
-
-
-	// 画面端からキャラクターの横幅
-	constexpr float kCharacterEdge = 300.0f;
-
-	// 画面下からキャラクターまでの高さ
-	constexpr float kCharacterHeightFromBottom = 50.0f;
-
-	// 非表示時の中心座標からの距離
-	constexpr float kHideDistance = 40.0f;
-
-
 	// 左端のキャラクター中心座標
 	Vec2 kLeftCenterPos = Vec2();
 
@@ -151,63 +35,83 @@ namespace Character
 
 	// 右端の非表示キャラクター中心座標
 	Vec2 kRightCenterPosHide = Vec2();
-
-
-	// キャラクターの情報
-	struct CharacterData
-	{
-		// キャラクターのグラフィックハンドル
-		const char* graphFilePath = "";
-
-		// キャラクター名
-		const char* name = "";
-
-		// キャラクターの拡大率
-		float scale = 1.0f;
-
-		// キャラクターの横分割数
-		int divX = 1;
-	};
-	
-
-
-	// キャラクターデータ
-	const std::vector<CharacterData> kCharacterData =
-	{
-		{"Data/Character/Character1.png","霊夢"},
-
-		{"Data/Character/Character2.png","ルーミア"},
-
-		{"Data/Character/Character3.png"},
-
-	};
-
-
-
-
 }
 
 
 MessageWindow::MessageWindow():
 	m_textInfo(),
 	m_windowInfo(),
-	m_characterInfo()
+	m_characterInfo(),
+	m_pMessageTextLoader(std::make_shared<MessageTextLoader>())
 {
 }
 
 MessageWindow::~MessageWindow()
 {
 	// フォントの削除
-	for(auto&font:m_textInfo.fontHandle)
+	for (auto& font : m_textInfo.fontHandle)
 	{
 		DeleteFontToHandle(font);
 	}
-
-
 }
 
 void MessageWindow::Init()
 {
+	// ロードデータ
+	const MessageTextLoader::LoadData loadData = m_pMessageTextLoader->LoadTextData();
+
+	// 会話情報
+	{
+		// 会話データのサイズ
+		const int talkDataSize = loadData.talkData.size();
+
+		// 会話データのサイズ分、要素を追加
+		m_messageElement.resize(talkDataSize);
+
+		// 会話データのサイズだけループ
+		for (int i = 0; i < talkDataSize; i++)
+		{
+			// 話す文章
+			m_messageElement[i].talkText = loadData.talkData[i].talkText;
+
+			// 話すキャラクター番号
+			m_messageElement[i].talkCharacterNo = loadData.talkData[i].talkCharacterNo;
+
+			// キャラクターの表情番号
+			m_messageElement[i].talkFaceNo = loadData.talkData[i].talkFaceNo;
+
+			// 右端に表示するかどうか
+			m_messageElement[i].isRight = loadData.talkData[i].isRight;
+
+			// 反転描画するかどうか
+			m_messageElement[i].isFlip = loadData.talkData[i].isFlip;
+
+			// テキストのフォントカラー
+			m_messageElement[i].fontColor = loadData.talkData[i].fontColor;
+
+			// 文字を震わせるかどうか
+			m_messageElement[i].isShake = loadData.talkData[i].isShake;
+
+			// テキストスピード
+			m_messageElement[i].drawCharFrame = loadData.talkData[i].drawCharFrame;
+
+			// フォントタイプ
+			m_messageElement[i].fontType = loadData.talkData[i].fontType;
+
+			// テキストの文字幅
+			m_messageElement[i].charInterval = loadData.talkData[i].charInterval;
+
+			// テキストサイズからの行間
+			m_messageElement[i].lineInterval = loadData.talkData[i].lineInterval;
+
+			// キャラクター名カラー
+			m_messageElement[i].characterNameColor = loadData.talkData[i].characterNameColor;
+
+			// キャラクター名
+			m_messageElement[i].characterName = loadData.talkData[i].characterName;
+		}
+	}
+
 
 	// ウィンドウ情報の初期化
 	{
@@ -216,26 +120,29 @@ void MessageWindow::Init()
 		Vec2 windowCenterPos = Vec2();
 
 		windowCenterPos.x = Game::kScreenWidth * 0.5f;
-		windowCenterPos.y = (Game::kScreenHeight - Window::kMessageWindowHeightFromBottom) - (Window::kMessageWindowHeight * 0.5f);
+		windowCenterPos.y = (Game::kScreenHeight - loadData.messageWindowData.messageWindowPosOffsetY) - (loadData.messageWindowData.messageWindowWidth * 0.5f);
 
 
 		// ウィンドウの左上座標を設定
-		m_windowInfo.leftTop.x = Window::kMessageWindowEdge;
-		m_windowInfo.leftTop.y = windowCenterPos.y - (Window::kMessageWindowHeight * 0.5f);
+		m_windowInfo.leftTop.x = loadData.messageWindowData.messageWindowMargin;
+		m_windowInfo.leftTop.y = windowCenterPos.y - (loadData.messageWindowData.messageWindowWidth * 0.5f);
 
 		// ウィンドウの右下座標を設定
-		m_windowInfo.rightBottom.x = Game::kScreenWidth - Window::kMessageWindowEdge;
-		m_windowInfo.rightBottom.y = windowCenterPos.y + (Window::kMessageWindowHeight * 0.5f);
+		m_windowInfo.rightBottom.x = Game::kScreenWidth - loadData.messageWindowData.messageWindowMargin;
+		m_windowInfo.rightBottom.y = windowCenterPos.y + (loadData.messageWindowData.messageWindowWidth * 0.5f);
+
+		loadData.fontData.characterNameFontSize;
 
 		// キャラクター名の幅を設定
-		const float characterNameFontSize = kCharacterNameFontSize * 1.2f;
+		const float characterNameFontSize = loadData.fontData.characterNameFontSize * 1.2f;
 
 		// キャラクター名を表示するウィンドウの左上座標を設定
 		m_windowInfo.nameLeftTop.x = m_windowInfo.leftTop.x;
 		m_windowInfo.nameLeftTop.y = m_windowInfo.leftTop.y - characterNameFontSize;
 
 		
-		m_windowInfo.nameWindowWidth = (kCharacterNameWidth + characterNameFontSize) * (kCharacterNameMax + 1);
+		
+		m_windowInfo.nameWindowWidth = (loadData.fontData.characterNameCharInterval + characterNameFontSize) * (loadData.fontData.characterNameMaxCharCount + 1);
 
 		m_windowInfo.nameRightBottom.x = m_windowInfo.nameLeftTop.x + m_windowInfo.nameWindowWidth;
 		m_windowInfo.nameRightBottom.y = m_windowInfo.nameLeftTop.y + characterNameFontSize;
@@ -245,7 +152,7 @@ void MessageWindow::Init()
 	// テキスト情報の初期化
 	{
 		// テキストスピードをフレームカウントに代入
-		m_textInfo.frameCount = kTextElement[0].textSpeed;
+		m_textInfo.frameCount = loadData.talkData[0].drawCharFrame;
 
 		// テキスト番号を0にする
 		m_textInfo.currentNumber = 0;
@@ -260,18 +167,32 @@ void MessageWindow::Init()
 		m_textInfo.dispCharCount = 0;
 
 		// 文字列を挿入する
-		m_textInfo.m_temp = kTextElement[0].text;
+		m_textInfo.m_temp = loadData.talkData[0].talkText.c_str();
 
 
 		// フォント関連
 		{
+			// フォントサイズを取得
+			m_textInfo.fontSize = loadData.fontData.fontSize;
 
-			for (auto& font : kFontData)
+
+			// フォントの数だけループ
+			for (int i = 0; i < loadData.fontData.fontFilePath.size(); i++)
 			{
 				// フォントの保存
-				m_textInfo.fontHandle.push_back(EvoLib::Load::LoadFont(font.FilePath, font.FontName, kFontScale));
+				m_textInfo.fontHandle.push_back
+				(EvoLib::Load::LoadFont(loadData.fontData.fontFilePath[i].c_str(), loadData.fontData.fontName[i].c_str(), m_textInfo.fontSize));
 			}
 
+
+			// キャラクター名のフォントを取得
+			m_textInfo.nameFontHandle =
+				EvoLib::Load::LoadFont(loadData.fontData.fontFilePath[loadData.fontData.characterNameFontType].c_str(), loadData.fontData.fontName[loadData.fontData.characterNameFontType].c_str(), loadData.fontData.characterNameFontSize);
+
+
+
+			// キャラクター名の文字横間隔を設定
+			m_textInfo.characterNameCharInterval = loadData.fontData.characterNameCharInterval;
 
 			// フォントサイズを取得
 			int fontSize = GetDrawStringWidthToHandle("L", 1, m_textInfo.fontHandle[0]);
@@ -283,49 +204,84 @@ void MessageWindow::Init()
 
 	// キャラクター情報の初期化
 	{
-		// 座標関連
-		{
-			// キャラクターの中心座標を設定
-			Vec2 characterCenterPos = Vec2();
-
-			characterCenterPos.x = Game::kScreenWidth * 0.5f;
-			characterCenterPos.y = (Game::kScreenHeight - Character::kCharacterHeightFromBottom) - (Character::kCharacterHeight * 0.5f);
-
-			// キャラクターの左端座標を設定
-			Character::kLeftCenterPos.x = Character::kCharacterEdge;
-			Character::kLeftCenterPos.y = characterCenterPos.y;
-
-			// キャラクターの右端座標を設定
-			Character::kRightCenterPos.x = Game::kScreenWidth - Character::kCharacterEdge;
-			Character::kRightCenterPos.y = characterCenterPos.y;
-
-			// キャラクターの左端非表示座標を設定
-			Character::kLeftCenterPosHide.x = Character::kLeftCenterPos.x - Character::kHideDistance;
-			Character::kLeftCenterPosHide.y = Character::kLeftCenterPos.y + Character::kHideDistance;
-
-			// キャラクターの右端非表示座標を設定
-			Character::kRightCenterPosHide.x = Character::kRightCenterPos.x + Character::kHideDistance;
-			Character::kRightCenterPosHide.y = Character::kRightCenterPos.y + Character::kHideDistance;
-		}
-		
 		// キャラクターのグラフィックハンドルの取得
 		{
-			m_characterInfo.resize(static_cast<int>(Character::kCharacterData.size()));
+			// キャラクターデータのサイズ
+			const int characterGraphFilePathSize = loadData.characterData.characterFilePath.size();
+	
+			// キャラクター情報のサイズを設定
+			m_characterInfo.resize(characterGraphFilePathSize);
+
 
 			for (int i = 0; i < static_cast<int>(m_characterInfo.size()); i++)
 			{
-				m_characterInfo[i].graphicHandle = LoadGraph(Character::kCharacterData[i].graphFilePath);
+				// キャラクターの分割数
+				const int SplitX = loadData.characterData.characterSplitX[i];
+				const int SplitY = loadData.characterData.characterSplitY[i];
+
+				// グラフィックの分割数
+				const EvoLib::Load::DivNum divNum = { SplitX,SplitY };
+
+				// キャラクターのグラフィックハンドルの取得
+				m_characterInfo[i].graphicHandle = EvoLib::Load::LoadDivGraph_EvoLib_Revision(loadData.characterData.characterFilePath[i].c_str(), divNum);
+
+				// キャラクターを右向きにするかどうか
+				m_characterInfo[i].isGraphRight = !loadData.characterData.characterIsRight[i];
 
 				// キャラクターの拡大率を設定
-				m_characterInfo[i].scale = Character::kCharacterData[i].scale;
+				m_characterInfo[i].scale = loadData.characterData.characterScale[i];
 
 				// キャラクター名を設定
-				m_characterInfo[i].name = kTextElement[i].characterName;
+				m_characterInfo[i].name = loadData.characterData.characterName[i].c_str();
+
+				// キャラクターの調整値を設定
+				m_characterInfo[i].centerPosOffset =
+					Vec2(loadData.characterData.characterAdjustX[i], loadData.characterData.characterAdjustY[i]);
+
+			
 			}
 		}
 
+		// 座標関連
+		{
+
+			// キャラクターの中心座標を設定
+			Vec2 characterCenterPos = Vec2();
+
+			
+
+			characterCenterPos.x = Game::kScreenWidth * 0.5f;
+			characterCenterPos.y = (Game::kScreenHeight - loadData.characterData.characterCenterPosOffsetY);
+
+
+			// キャラクターの左端座標を設定
+			Character::kLeftCenterPos.x = loadData.characterData.characterCenterPosOffsetX;
+			Character::kLeftCenterPos.y = characterCenterPos.y;
+
+			// キャラクターの右端座標を設定
+			Character::kRightCenterPos.x = Game::kScreenWidth - loadData.characterData.characterCenterPosOffsetX;
+			Character::kRightCenterPos.y = characterCenterPos.y;
+
+			loadData.characterData.characterNotSpeakCenterPosOffsetY;
+
+			// キャラクターの左端非表示座標を設定
+			Character::kLeftCenterPosHide.x = Character::kLeftCenterPos.x - loadData.characterData.characterNotSpeakCenterPosOffsetY;
+			Character::kLeftCenterPosHide.y = Character::kLeftCenterPos.y + loadData.characterData.characterNotSpeakCenterPosOffsetY;
+
+			// キャラクターの右端非表示座標を設定
+			Character::kRightCenterPosHide.x = Character::kRightCenterPos.x + loadData.characterData.characterNotSpeakCenterPosOffsetY;
+			Character::kRightCenterPosHide.y = Character::kRightCenterPos.y + loadData.characterData.characterNotSpeakCenterPosOffsetY;
+		}
+		
+		// キャラクターの移動速度を設定
+		m_moveSpeed = kCharcterMoveSpeed;
+	
+		// キャラクターの透明度を設定
+		m_graphNotSpeakAlpha= EvoLib::Convert::ConvertFromPercentToValue(255, loadData.characterData.characterNotSpeakAlphaPercentage);
+
+
 		// 一番はじめに表示するキャラクターの座標を設定
-		InitCharacterPos(kTextElement[m_textInfo.currentNumber].isRightDraw);
+		InitCharacterPos(m_messageElement[m_textInfo.currentNumber].isRight);
 	}
 }
 
@@ -372,7 +328,7 @@ void MessageWindow::UpdateTextDisplay()
 		if (m_textInfo.frameCount <= 0)
 		{
 			// テキストスピードをフレームカウントに代入
-			m_textInfo.frameCount = kTextSpeed;
+			m_textInfo.frameCount = m_messageElement[m_textInfo.currentNumber].drawCharFrame;
 
 			// 表示する文字数を増やす
 			m_textInfo.dispCharCount++;
@@ -389,6 +345,8 @@ void MessageWindow::UpdateTextDisplay()
 
 	for (int i = 0; i < m_textInfo.dispCharCount; i++)
 	{
+		const int tempSize = m_textInfo.m_temp.size();
+
 		if (currentByte >= m_textInfo.m_temp.size())
 		{
 			m_textInfo.isEndText = true;
@@ -399,10 +357,21 @@ void MessageWindow::UpdateTextDisplay()
 			break;
 		}
 
-		unsigned char charData = m_textInfo.m_temp[currentByte];    // チェックする文字
-		if (charData == '\n') {
+		unsigned char charData = m_textInfo.m_temp[currentByte]; 
+		
+
+	
+
+		
+
+	
+
+
+		// チェックする文字
+		if (charData == '\\')
+		{
 			// 改行文字の場合
-			currentByte += 1; // 改行文字をスキップ
+			currentByte += 2; // 改行文字をスキップ
 			continue;
 		}
 		else if (charData < 0x80)
@@ -435,17 +404,17 @@ void MessageWindow::UpdateTextOnInput()
 				m_textInfo.isFastDraw = false;
 
 				// フレームカウントをテキストスピードに代入
-				m_textInfo.frameCount = kTextElement[m_textInfo.currentNumber].textSpeed;
+				m_textInfo.frameCount = m_messageElement[m_textInfo.currentNumber].drawCharFrame;
 			}
 
 			// 現在の選択項目を一つ下にずらす(ループする)
-			m_textInfo.currentNumber = EvoLib::Calculation::SelectLoopNumber(0, static_cast<int>(kTextElement.size()), m_textInfo.currentNumber);
+			m_textInfo.currentNumber = EvoLib::Calculation::SelectLoopNumber(0, static_cast<int>(m_messageElement.size()), m_textInfo.currentNumber);
 
 			// 文字列を挿入する
-			m_textInfo.m_temp = kTextElement[m_textInfo.currentNumber].text;
+			m_textInfo.m_temp = m_messageElement[m_textInfo.currentNumber].talkText;
 
 			// キャラクター座標初期化
-			InitCharacterPos(kTextElement[m_textInfo.currentNumber].isRightDraw);
+			InitCharacterPos(m_messageElement[m_textInfo.currentNumber].isRight);
 		}
 		else
 		{
@@ -464,19 +433,21 @@ void MessageWindow::DrawMessageText()
 	int currentByte = 0;
 
 	// フォント番号
-	const int fontNumber = kTextElement[m_textInfo.currentNumber].fontType;
+	const int fontNumber = m_messageElement[m_textInfo.currentNumber].fontType;
 
 	// フォントハンドルの決定（例：特定の文字位置でフォントを変更する）
 	const int fontHandle = m_textInfo.fontHandle[fontNumber];
 
 	// テキストの色
-	const int color = kTextElement[m_textInfo.currentNumber].color;
+	const int color = m_messageElement[m_textInfo.currentNumber].fontColor;
 
 	// 行間
-	const float lineSpace = kTextElement[m_textInfo.currentNumber].textSize * kTextElement[m_textInfo.currentNumber].lineSpace; // 行間
+	const float lineSpace = m_textInfo.fontSize * m_messageElement[m_textInfo.currentNumber].lineInterval; // 行間
 
 	// 改行したかどうか
 	bool isLineBreak = false;
+
+	bool isLineBreak_test = false;
 
 	for (int i = 0; i < m_textInfo.dispCharCount; i++)
 	{
@@ -486,16 +457,18 @@ void MessageWindow::DrawMessageText()
 
 	
 
-		if (charData == '\n') 
+		if (charData == '\\')
 		{
 			// 改行文字の場合
 			textPos.x = m_textInfo.textPos.x; // 行の先頭に戻る
 			textPos.y += GetFontSizeToHandle(fontHandle); // 行の高さを加算
 			textPos.y += lineSpace; // 行間を加算
 
-			currentByte += 1; // 改行文字をスキップ
+			currentByte += 2; // 改行文字をスキップ
 
 			isLineBreak = true;
+
+			isLineBreak_test = true;
 
 			continue;
 		}
@@ -514,10 +487,8 @@ void MessageWindow::DrawMessageText()
 			if (i != 0 && !isLineBreak)
 			{
 				// テキストの横幅を追加
-				textPos.x += kTextElement[m_textInfo.currentNumber].textWidth;
+				textPos.x += m_messageElement[m_textInfo.currentNumber].charInterval;
 			}
-
-		
 		}
 		
 
@@ -534,7 +505,7 @@ void MessageWindow::DrawMessageText()
 		int shakeY = GetRand(2) - 1;
 
 		// テキストの揺れを設定
-		if (!kTextElement[m_textInfo.currentNumber].isVibration)
+		if (!m_messageElement[m_textInfo.currentNumber].isShake)
 		{
 			shakeX = 0;
 			shakeY = 0;
@@ -553,6 +524,7 @@ void MessageWindow::DrawMessageText()
 		currentByte += size;
 
 		isLineBreak = false;
+		isLineBreak_test = false;
 	}
 }
 
@@ -563,20 +535,16 @@ void MessageWindow::DrawCharacterNameText()
 	int currentByte = 0;
 
 	// フォントハンドルの決定（例：特定の文字位置でフォントを変更する）
-	const int fontHandle = m_textInfo.fontHandle[kCharacterNameFontType];
+	const int fontHandle = m_textInfo.nameFontHandle;
 
 	// テキストの色
-	const int color = kCharacterNameColor;
+	const int color = m_messageElement[m_textInfo.currentNumber].characterNameColor;
 
 
 	// 文字列を挿入する
-	std::string temp = kTextElement[m_textInfo.currentNumber].characterName;
+	std::string temp = m_messageElement[m_textInfo.currentNumber].characterName;
 
-	// 文字列が空の場合、キャラクター名を代入する
-	if (temp == "")
-	{
-		temp = Character::kCharacterData[kTextElement[m_textInfo.currentNumber].characterNumber].name;
-	}
+	
 
 
 
@@ -598,7 +566,6 @@ void MessageWindow::DrawCharacterNameText()
 	textPos.y = nameWindowCenterPos.y;
 
 
-	
 	for (int i = 0; i < dispCharCount; i++)
 	{
 		if (currentByte >= temp.size()) break;
@@ -609,10 +576,10 @@ void MessageWindow::DrawCharacterNameText()
 		if (i != 0)
 		{
 			// テキストの横幅を加算
-			textPos.x += kCharacterNameWidth;
+			textPos.x += m_textInfo.characterNameCharInterval;
 		}
 
-
+	
 		if (charData < 0x80)
 		{
 			size = 1;
@@ -622,9 +589,6 @@ void MessageWindow::DrawCharacterNameText()
 		}
 
 	
-
-
-
 		// 文字列の描画
 		DrawStringFToHandle(textPos.x, textPos.y, temp.substr(currentByte, size).c_str(), color, fontHandle);
 
@@ -632,8 +596,6 @@ void MessageWindow::DrawCharacterNameText()
 		textPos.x += GetDrawStringWidth(temp.substr(currentByte, size).c_str(), size, fontHandle);
 
 		currentByte += size;
-
-	
 	}
 }
 
@@ -690,7 +652,7 @@ void MessageWindow::DrawMessageWindow()
 void MessageWindow::InitCharacterPos(const bool& isRightDraw)
 {
 	// キャラクター番号
-	const int characterNumber = kTextElement[m_textInfo.currentNumber].characterNumber;
+	const int characterNumber = m_messageElement[m_textInfo.currentNumber].talkCharacterNo;
 
 	// 一つ前のテキスト番号
 	const int beforeTextNumber = m_textInfo.currentNumber - 1;
@@ -699,16 +661,16 @@ void MessageWindow::InitCharacterPos(const bool& isRightDraw)
 
 	if (beforeTextNumber < 0)
 	{
-		SetUpCharacterPos(kTextElement[m_textInfo.currentNumber].isRightDraw, characterNumber, false);
+		SetUpCharacterPos(m_messageElement[m_textInfo.currentNumber].isRight, characterNumber, false);
 
 		return;
 	}
 
 	// キャラクター番号
-	const int characterBeforeNumber = kTextElement[beforeTextNumber].characterNumber;
+	const int characterBeforeNumber = m_messageElement[beforeTextNumber].talkCharacterNo;
 
 
-	if (kTextElement[m_textInfo.currentNumber].isRightDraw == kTextElement[beforeTextNumber].isRightDraw &&
+	if (m_messageElement[m_textInfo.currentNumber].isRight == m_messageElement[beforeTextNumber].isRight &&
 		characterNumber == characterBeforeNumber)
 	{
 		return;
@@ -716,10 +678,10 @@ void MessageWindow::InitCharacterPos(const bool& isRightDraw)
 
 
 
-	SetUpCharacterPos(kTextElement[beforeTextNumber].isRightDraw, characterBeforeNumber, true);
+	SetUpCharacterPos(m_messageElement[beforeTextNumber].isRight, characterBeforeNumber, true);
 
 
-	SetUpCharacterPos(kTextElement[m_textInfo.currentNumber].isRightDraw, characterNumber, false);
+	SetUpCharacterPos(m_messageElement[m_textInfo.currentNumber].isRight, characterNumber, false);
 }
 
 
@@ -731,14 +693,23 @@ void MessageWindow::SetUpCharacterPos(const bool& isRightDraw, const int& charac
 		if (!isRightDraw)
 		{
 			m_characterInfo[characterNumber].pos = Character::kLeftCenterPosHide;
+			m_characterInfo[characterNumber].pos.y += m_characterInfo[characterNumber].centerPosOffset.y;
+			m_characterInfo[characterNumber].pos.x += m_characterInfo[characterNumber].centerPosOffset.x;
 
 			m_characterInfo[characterNumber].targetPos = Character::kLeftCenterPos;
+			m_characterInfo[characterNumber].targetPos.y += m_characterInfo[characterNumber].centerPosOffset.y;
+			m_characterInfo[characterNumber].targetPos.x += m_characterInfo[characterNumber].centerPosOffset.x;
+
 		}
 		else
 		{
 			m_characterInfo[characterNumber].pos = Character::kRightCenterPosHide;
+			m_characterInfo[characterNumber].pos.y += m_characterInfo[characterNumber].centerPosOffset.y;
+			m_characterInfo[characterNumber].pos.x -= m_characterInfo[characterNumber].centerPosOffset.x;
 
 			m_characterInfo[characterNumber].targetPos = Character::kRightCenterPos;
+			m_characterInfo[characterNumber].targetPos.y += m_characterInfo[characterNumber].centerPosOffset.y;
+			m_characterInfo[characterNumber].targetPos.x -= m_characterInfo[characterNumber].centerPosOffset.x;
 		}
 	}
 	else
@@ -747,14 +718,23 @@ void MessageWindow::SetUpCharacterPos(const bool& isRightDraw, const int& charac
 		if (!isRightDraw)
 		{
 			m_characterInfo[characterNumber].pos = Character::kLeftCenterPos;
+			m_characterInfo[characterNumber].pos.y += m_characterInfo[characterNumber].centerPosOffset.y;
+			m_characterInfo[characterNumber].pos.x += m_characterInfo[characterNumber].centerPosOffset.x;
 
 			m_characterInfo[characterNumber].targetPos = Character::kLeftCenterPosHide;
+			m_characterInfo[characterNumber].targetPos.y += m_characterInfo[characterNumber].centerPosOffset.y;
+			m_characterInfo[characterNumber].targetPos.x += m_characterInfo[characterNumber].centerPosOffset.x;
 		}
 		else
 		{
 			m_characterInfo[characterNumber].pos = Character::kRightCenterPos;
+			m_characterInfo[characterNumber].pos.y += m_characterInfo[characterNumber].centerPosOffset.y;
+			m_characterInfo[characterNumber].pos.x -= m_characterInfo[characterNumber].centerPosOffset.x;
+
 
 			m_characterInfo[characterNumber].targetPos = Character::kRightCenterPosHide;
+			m_characterInfo[characterNumber].targetPos.y += m_characterInfo[characterNumber].centerPosOffset.y;
+			m_characterInfo[characterNumber].targetPos.x -= m_characterInfo[characterNumber].centerPosOffset.x;
 		}
 	}
 
@@ -769,11 +749,11 @@ void MessageWindow::UpdateCharacter()
 {
 
 	// キャラクター番号
-	const int characterNumber = kTextElement[m_textInfo.currentNumber].characterNumber;
+	const int characterNumber = m_messageElement[m_textInfo.currentNumber].talkCharacterNo;
 
-	
+
 	// キャラクターの座標を移動
-	m_characterInfo[characterNumber].vec = EvoLib::Calculation::TargetMoveValue(m_characterInfo[characterNumber].pos, m_characterInfo[characterNumber].targetPos, 0.1f);
+	m_characterInfo[characterNumber].vec = EvoLib::Calculation::TargetMoveValue(m_characterInfo[characterNumber].pos, m_characterInfo[characterNumber].targetPos, m_moveSpeed);
 
 
 	m_characterInfo[characterNumber].pos += m_characterInfo[characterNumber].vec;
@@ -789,7 +769,7 @@ void MessageWindow::UpdateCharacter()
 	}
 
 	// キャラクター番号
-	const int characterBeforeNumber = kTextElement[beforeTextNumber].characterNumber;
+	const int characterBeforeNumber = m_messageElement[beforeTextNumber].talkCharacterNo;
 
 
 	// キャラクターの座標を移動
@@ -801,7 +781,7 @@ void MessageWindow::UpdateCharacter()
 void MessageWindow::DrawCharacter()
 {
 	// 現在のキャラクター番号
-	const int characterNumber = kTextElement[m_textInfo.currentNumber].characterNumber;
+	const int characterNumber = m_messageElement[m_textInfo.currentNumber].talkCharacterNo;
 
 	// 前回のキャラクター番号
 	int characterBeforeNumber = 0;
@@ -809,9 +789,15 @@ void MessageWindow::DrawCharacter()
 	// 一つ前のテキスト番号
 	const int beforeTextNumber = m_textInfo.currentNumber - 1;
 
+	// 反転して描画するかどうか
+	bool isGraphReverse = false;
+
 	
+	isGraphReverse = IsFlipCharacter(characterNumber, m_textInfo.currentNumber);
+	
+
 	// キャラクターの描画
-	DrawRotaGraph(m_characterInfo[characterNumber].pos.x, m_characterInfo[characterNumber].pos.y, 1.0, 0.0, m_characterInfo[characterNumber].graphicHandle, true);
+	DrawRotaGraph(m_characterInfo[characterNumber].pos.x, m_characterInfo[characterNumber].pos.y, m_characterInfo[characterNumber].scale, 0.0, m_characterInfo[characterNumber].graphicHandle[m_messageElement[m_textInfo.currentNumber].talkFaceNo], true, isGraphReverse);
 	
 
 	// 半透明にして描画
@@ -823,26 +809,37 @@ void MessageWindow::DrawCharacter()
 		}
 
 		// 前回のキャラクター番号代入
-		characterBeforeNumber = kTextElement[beforeTextNumber].characterNumber;
+		characterBeforeNumber = m_messageElement[beforeTextNumber].talkCharacterNo;
 
 
 
 		// どちらか片方にキャラクターが表示されていない場合、表示させる
- 		if(kTextElement[m_textInfo.currentNumber].isRightDraw == kTextElement[beforeTextNumber].isRightDraw)
+ 		if(m_messageElement[m_textInfo.currentNumber].isRight == m_messageElement[beforeTextNumber].isRight)
 		{
-			bool isRightDraw = kTextElement[m_textInfo.currentNumber].isRightDraw;
+			bool isRightDraw = m_messageElement[m_textInfo.currentNumber].isRight;
 
 			for (int i = m_textInfo.currentNumber; i >= 0; --i)
 			{
-				if (isRightDraw != kTextElement[i].isRightDraw)
+				if (isRightDraw != m_messageElement[i].isRight)
 				{
 					// 描画ブレンドモードをアルファブレンド（５０％）にする
-					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
+					SetDrawBlendMode(DX_BLENDMODE_ALPHA, m_graphNotSpeakAlpha);
 
-					int test = kTextElement[i].characterNumber;
+					int number = m_messageElement[i].talkCharacterNo;
+
+					
+					if(isRightDraw == m_characterInfo[number].isRightDraw)
+					{
+						continue;
+					}
 
 
-					DrawRotaGraph(m_characterInfo[test].pos.x, m_characterInfo[test].pos.y, 1.0, 0.0, m_characterInfo[test].graphicHandle, true);
+
+					isGraphReverse = IsFlipCharacter(number, i);
+
+
+
+					DrawRotaGraph(m_characterInfo[number].pos.x, m_characterInfo[number].pos.y, m_characterInfo[number].scale, 0.0, m_characterInfo[number].graphicHandle[m_messageElement[i].talkFaceNo], true, isGraphReverse);
 
 					// 描画ブレンドモードをノーブレンドにする
 					SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -853,13 +850,56 @@ void MessageWindow::DrawCharacter()
 		}
 		else
 		{
-			// 描画ブレンドモードをアルファブレンド（５０％）にする
-			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
 
-			DrawRotaGraph(m_characterInfo[characterBeforeNumber].pos.x, m_characterInfo[characterBeforeNumber].pos.y, 1.0, 0.0, m_characterInfo[characterBeforeNumber].graphicHandle, true);
+			isGraphReverse = IsFlipCharacter(characterBeforeNumber, beforeTextNumber);
+
+			// 描画ブレンドモードをアルファブレンド
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, m_graphNotSpeakAlpha);
+
+			DrawRotaGraph(m_characterInfo[characterBeforeNumber].pos.x, m_characterInfo[characterBeforeNumber].pos.y, m_characterInfo[characterBeforeNumber].scale, 0.0, m_characterInfo[characterBeforeNumber].graphicHandle[m_messageElement[beforeTextNumber].talkFaceNo], true, isGraphReverse);
 
 			// 描画ブレンドモードをノーブレンドにする
 			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+		}
+	}
+}
+
+bool MessageWindow::IsFlipCharacter(const int& characterNumber, const int& textNumber)
+{
+	if (m_characterInfo[characterNumber].isGraphRight)
+	{
+		// 何事もなければtrueを返す
+		const bool isRightDraw = m_messageElement[textNumber].isRight;
+
+		const bool isFlip = m_messageElement[textNumber].isFlip;
+
+
+		if(isRightDraw == isFlip)
+		{
+			return true;
+		}
+		
+		if (!isRightDraw == isFlip)
+		{
+			return false;
+		}
+	}
+	else
+	{
+		// 何事もなければfalseを返す
+
+		const bool isRightDraw = m_messageElement[textNumber].isRight;
+
+		const bool isFlip = m_messageElement[textNumber].isFlip;
+
+		if (isRightDraw == isFlip)
+		{
+			return false;
+		}
+
+		if (!isRightDraw == isFlip)
+		{
+			return true;
 		}
 	}
 }
