@@ -14,8 +14,13 @@ public:
 		std::vector<std::string> fontFilePath;
 		// フォント名
 		std::vector<std::string> fontName;
-		// フォントサイズ
-		int fontSize = 0;
+		// 通常フォントサイズ
+		int normalFontSize = 0;
+		// 小さいフォントサイズ
+		int smallFontSize = 0;
+		// 大きいフォントサイズ
+		int bigFontSize = 0;
+
 
 
 		// キャラクター名を描画する際のフォントサイズ
@@ -103,6 +108,12 @@ public:
 
 		// フォントカラー
 		int fontColor = 0xffffff;
+
+		// フォントの透明度
+		int fontAlpha = 0;
+
+		// フォントの文字サイズタイプ
+		int fontSizeType = 0;
 
 		// 文字を震わせるかどうか
 		bool isShake = false;

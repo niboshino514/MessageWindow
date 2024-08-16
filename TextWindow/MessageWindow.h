@@ -10,6 +10,16 @@ class MessageWindow
 {
 public:
 
+	// フォントサイズ
+	enum FontSize
+	{
+		Normal,			// 通常
+		Small,			// 小さい
+		Big,			// 大きい
+		FontSizeCount,	// フォントサイズの数
+	};
+
+
 	// メッセージ要素
 	struct MessageElement
 	{
@@ -30,6 +40,12 @@ public:
 
 		// テキストのフォントカラー
 		int fontColor = 0xffffff;
+
+		// フォントの透明度
+		int fontAlpha = 0;
+
+		// フォントの文字サイズタイプ
+		FontSize fontSizeType = FontSize();
 
 		// 文字を震わせるかどうか
 		bool isShake = false;
@@ -88,11 +104,17 @@ public:
 		// 表示する文字数
 		int dispCharCount = 0;
 
-		// フォントサイズ
-		int fontSize = 0;
+		// 通常フォントサイズ
+		int normalFontSize = 0;
+		// 小さいフォントサイズ
+		int smallFontSize = 0;
+		// 大きいフォントサイズ
+		int bigFontSize = 0;
+
+
 
 		// フォントハンドル
-		std::vector<int> fontHandle;
+		std::vector<std::vector<int>> fontHandle;
 
 	
 
@@ -120,7 +142,7 @@ public:
 		Vec2 nameRightBottom = Vec2();
 
 		// キャラクター名を表示するウィンドウの横幅
-		int nameWindowWidth = 0;
+		float nameWindowWidth = 0.0f;
 	};
 
 	// キャラクター表示情報
@@ -133,7 +155,7 @@ public:
 		std::string name = "";
 
 		// キャラクター拡大率
-		float scale = 1.0f;
+		double scale = 1.0f;
 
 		// 画像を右向きにするかどうか
 		bool isGraphRight = false;
@@ -159,6 +181,15 @@ public:
 private:
 
 
+	/// <summary>
+	/// データの読み込み
+	/// </summary>
+	void LoadData();
+
+	/// <summary>
+	/// データの解放
+	/// </summary>
+	void UnloadData();
 
 
 
@@ -172,12 +203,18 @@ private:
 	/// </summary>
 	void UpdateTextOnInput();
 
+
 	/// <summary>
 	/// テキスト描画
 	/// </summary>
 	void DrawMessageText();
 
+	/// <summary>
+	/// キャラクター名の描画
+	/// </summary>
 	void DrawCharacterNameText();
+
+
 
 	/// <summary>
 	/// 文字列のサイズを取得
@@ -188,8 +225,14 @@ private:
 	/// <returns>文字列のサイズ</returns>
 	int GetDrawStringWidth(const char* str, const int& length, const int& fontHandle);
 
-	// 文字列がメッセージウィンドウに収まるかどうか
+	/// <summary>
+	/// 文字列がメッセージウィンドウに収まるかどうか
+	/// </summary>
+	/// <param name="textPos">テキストの座標</param>
+	/// <param name="fontHandle">フォントのハンドル</param>
+	/// <returns>文字列がメッセージウィンドウに収まるかどうかのフラグ</returns>
 	bool IsTextInWindow(const Vec2 textPos, const int fontHandle);
+
 
 
 
@@ -197,7 +240,6 @@ private:
 	/// メッセージウィンドウの描画
 	/// </summary>
 	void DrawMessageWindow();
-
 	
 
 	/// <summary>
@@ -214,9 +256,14 @@ private:
 	/// <param name="isBeforeNumber">前のキャラクター番号かどうか</param>
 	void SetUpCharacterPos(const bool& isRightDraw, const int& characterNumber, const bool isBeforeNumber);
 
+	/// <summary>
+	/// キャラクター座標更新
+	/// </summary>
+	void UpdateCharacterPos();
 
-	void UpdateCharacter();
-
+	/// <summary>
+	/// キャラクター描画
+	/// </summary>
 	void DrawCharacter();
 
 	/// <summary>
@@ -235,7 +282,6 @@ private:
 	// ウィンドウ情報
 	MessageWindowInfo m_windowInfo;
 
-
 	// キャラクター情報
 	std::vector<CharacterDisplayInfo> m_characterInfo;
 
@@ -248,7 +294,11 @@ private:
 	// メッセージ要素
 	std::vector<MessageElement> m_messageElement;
 
-	
+	////////////////////////
+	// クラスポインタ関連 //
+	////////////////////////
+
+	// メッセージテキストローダーポインタ
 	std::shared_ptr<MessageTextLoader> m_pMessageTextLoader;
 };
 

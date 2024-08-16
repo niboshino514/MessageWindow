@@ -136,13 +136,7 @@ std::vector<std::vector<std::string>> EvoLib::File::CsvFileLoading_Revision(cons
             }
         }
 
-        // 改行がセル内に含まれている場合、次の行を読み込む
-        if (insideQuotes)
-        {
-            currentCell += L'/n';
-            continue;
-        }
-
+        
         row.push_back(currentCell);
         currentCell.clear();
 

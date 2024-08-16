@@ -15,7 +15,7 @@ namespace
 	const Vec2 kTextPos = { 0.0f, 0.0f};
 
 	// テキスト
-	const char* const kText = "TestCode";
+	const char* const kText = "なんか頑張ったプログラム";
 
 	// テキスト色
 	constexpr int kTextColor = 0xffffff;

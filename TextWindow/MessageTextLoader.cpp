@@ -52,17 +52,22 @@ void MessageTextLoader::LoadTextSettingData()
 		fontData.fontFilePath = csvFileData[0];
 		// フォント名
 		fontData.fontName = csvFileData[1];
-		// フォントサイズ
-		fontData.fontSize = std::stoi(csvFileData[2][0]);
+		// 通常フォントサイズ
+		fontData.normalFontSize = std::stoi(csvFileData[2][0]);
+		// 小さいフォントサイズ
+		fontData.smallFontSize = std::stoi(csvFileData[3][0]);
+		// 大きいフォントサイズ
+		fontData.bigFontSize = std::stoi(csvFileData[4][0]);
+
 
 		// キャラクター名を描画する際のフォントサイズ
-		fontData.characterNameFontSize = std::stoi(csvFileData[3][0]);
+		fontData.characterNameFontSize = std::stoi(csvFileData[5][0]);
 		// キャラクターの最大文字数
-		fontData.characterNameMaxCharCount = std::stoi(csvFileData[4][0]);
+		fontData.characterNameMaxCharCount = std::stoi(csvFileData[6][0]);
 		// キャラクター名の文字横間隔
-		fontData.characterNameCharInterval = std::stoi(csvFileData[5][0]);
+		fontData.characterNameCharInterval = std::stoi(csvFileData[7][0]);
 		// キャラクター名のフォントタイプ
-		fontData.characterNameFontType = std::stoi(csvFileData[6][0]);
+		fontData.characterNameFontType = std::stoi(csvFileData[8][0]);
 	}
 
 
@@ -76,60 +81,60 @@ void MessageTextLoader::LoadTextSettingData()
 	// キャラクターデータ関連
 	{
 		// キャラクターファイルパス
-		characterData.characterFilePath = csvFileData[7];
+		characterData.characterFilePath = csvFileData[9];
 		// キャラクター名
-		characterData.characterName = csvFileData[8];
+		characterData.characterName = csvFileData[10];
 		// 画像拡大率
-		for (int i = 0; i < static_cast<int>(csvFileData[9].size()); i++)
-		{
-			characterData.characterScale.push_back(std::stod(csvFileData[9][i]));
-		}
-		// 画像の縦分割数
-		for (int i = 0; i < static_cast<int>(csvFileData[10].size()); i++)
-		{
-			characterData.characterSplitY.push_back(std::stoi(csvFileData[10][i]));
-		}
-		// 画像の横分割数
 		for (int i = 0; i < static_cast<int>(csvFileData[11].size()); i++)
 		{
-			characterData.characterSplitX.push_back(std::stoi(csvFileData[11][i]));
+			characterData.characterScale.push_back(std::stod(csvFileData[11][i]));
 		}
-		// 画像が右向きかどうか
+		// 画像の縦分割数
 		for (int i = 0; i < static_cast<int>(csvFileData[12].size()); i++)
 		{
-			characterData.characterIsRight.push_back(EvoLib::Convert::ConvertStringToBool(csvFileData[12][i]));
+			characterData.characterSplitY.push_back(std::stoi(csvFileData[12][i]));
 		}
-		// 画像の上下調整値
+		// 画像の横分割数
 		for (int i = 0; i < static_cast<int>(csvFileData[13].size()); i++)
 		{
-			characterData.characterAdjustY.push_back(std::stof(csvFileData[13][i]));
+			characterData.characterSplitX.push_back(std::stoi(csvFileData[13][i]));
 		}
-		// 画像の左右調整値
+		// 画像が右向きかどうか
 		for (int i = 0; i < static_cast<int>(csvFileData[14].size()); i++)
 		{
-			characterData.characterAdjustX.push_back(std::stof(csvFileData[14][i]));
+			characterData.characterIsRight.push_back(EvoLib::Convert::ConvertStringToBool(csvFileData[14][i]));
+		}
+		// 画像の上下調整値
+		for (int i = 0; i < static_cast<int>(csvFileData[15].size()); i++)
+		{
+			characterData.characterAdjustY.push_back(std::stof(csvFileData[15][i]));
+		}
+		// 画像の左右調整値
+		for (int i = 0; i < static_cast<int>(csvFileData[16].size()); i++)
+		{
+			characterData.characterAdjustX.push_back(std::stof(csvFileData[16][i]));
 		}
 
 
 		// キャラクターが話す時のボイスファイルパス
-		characterData.characterVoiceFilePath = csvFileData[15];
+		characterData.characterVoiceFilePath = csvFileData[17];
 		// キャラクターが話す際のボイス音量
-		for (int i = 0; i < static_cast<int>(csvFileData[16].size()); i++)
+		for (int i = 0; i < static_cast<int>(csvFileData[18].size()); i++)
 		{
-			characterData.characterVoiceVolume.push_back(std::stoi(csvFileData[16][i]));
+			characterData.characterVoiceVolume.push_back(std::stoi(csvFileData[18][i]));
 		}
 
 		// 画面下から画像の中心までの距離
-		characterData.characterCenterPosOffsetY = std::stof(csvFileData[17][0]);
+		characterData.characterCenterPosOffsetY = std::stof(csvFileData[19][0]);
 		// 画面端から画像の中心までの距離
-		characterData.characterCenterPosOffsetX = std::stof(csvFileData[18][0]);
+		characterData.characterCenterPosOffsetX = std::stof(csvFileData[20][0]);
 
 		// キャラクターが話していない時の画像の透明度パーセンテージ
-		characterData.characterNotSpeakAlphaPercentage = std::stoi(csvFileData[19][0]);
+		characterData.characterNotSpeakAlphaPercentage = std::stoi(csvFileData[21][0]);
 		// キャラクターが話していない時の画像中心からの距離
-		characterData.characterNotSpeakCenterPosOffsetY = std::stof(csvFileData[20][0]);
+		characterData.characterNotSpeakCenterPosOffsetY = std::stof(csvFileData[22][0]);
 		// 画像移動速度
-		characterData.characterMoveSpeed = std::stof(csvFileData[21][0]);
+		characterData.characterMoveSpeed = std::stof(csvFileData[23][0]);
 
 	}
 
@@ -139,13 +144,13 @@ void MessageTextLoader::LoadTextSettingData()
 	// メッセージウィンドウ関連
 	{
 		// メッセージウィンドウの横幅
-		messageWindowData.messageWindowWidth = std::stoi(csvFileData[22][0]);
+		messageWindowData.messageWindowWidth = std::stof(csvFileData[24][0]);
 
 		// 画面端からのメッセージウィンドウの距離
-		messageWindowData.messageWindowMargin = std::stof(csvFileData[23][0]);
+		messageWindowData.messageWindowMargin = std::stof(csvFileData[25][0]);
 
 		// 画面下からのメッセージウィンドウの距離
-		messageWindowData.messageWindowPosOffsetY = std::stof(csvFileData[24][0]);
+		messageWindowData.messageWindowPosOffsetY = std::stof(csvFileData[26][0]);
 	}
 
 
@@ -255,35 +260,45 @@ void MessageTextLoader::LoadTalkData()
 		// 反転描画するかどうか
 		defaultTakeData.isFlip = EvoLib::Convert::ConvertStringToBool(csvFileData[0][4]);
 
-		// カラーコードに変換
-		std::string color = "0x" + csvFileData[0][5];
-
 		// フォントカラー
-		defaultTakeData.fontColor = std::stoi(color, nullptr, 16);
+		{
+			// カラーコードに変換
+			const std::string color = "0x" + csvFileData[0][5];
+			// フォントカラー
+			defaultTakeData.fontColor = std::stoi(color, nullptr, 16);
+		}
+
+		// フォントの透明度
+		defaultTakeData.fontAlpha = std::stoi(csvFileData[0][6]);
+
+		// フォントの文字サイズタイプ
+		defaultTakeData.fontSizeType = std::stoi(csvFileData[0][7]);
 
 		// 文字を震わせるかどうか
-		defaultTakeData.isShake = EvoLib::Convert::ConvertStringToBool(csvFileData[0][6]);
+		defaultTakeData.isShake = EvoLib::Convert::ConvertStringToBool(csvFileData[0][8]);
 
 		// 一文字を表示するのにかかるフレーム数
-		defaultTakeData.drawCharFrame = std::stoi(csvFileData[0][7]);
+		defaultTakeData.drawCharFrame = std::stoi(csvFileData[0][9]);
 
 		// フォントタイプ
-		defaultTakeData.fontType = std::stoi(csvFileData[0][8]);
+		defaultTakeData.fontType = std::stoi(csvFileData[0][10]);
 
 		// 文字横間隔
-		defaultTakeData.charInterval = std::stoi(csvFileData[0][9]);
+		defaultTakeData.charInterval = std::stoi(csvFileData[0][11]);
 
 		// 文字縦間隔
-		defaultTakeData.lineInterval = std::stof(csvFileData[0][10]);
-
-		// カラーコードに変換
-		color = "0x" + csvFileData[0][11];
+		defaultTakeData.lineInterval = std::stof(csvFileData[0][12]);
 
 		// キャラクター名カラー
-		defaultTakeData.characterNameColor = std::stoi(color, nullptr, 16);
+		{
+			// カラーコードに変換
+			const std::string color = "0x" + csvFileData[0][13];
 
+			// キャラクター名カラー
+			defaultTakeData.characterNameColor = std::stoi(color, nullptr, 16);
+		}
 		// キャラクター名
-		defaultTakeData.characterName = csvFileData[0][12].c_str();
+		defaultTakeData.characterName = csvFileData[0][14].c_str();
 	}
 
 	std::vector<CSVTakeData> talkData;
@@ -333,51 +348,63 @@ void MessageTextLoader::LoadTalkData()
 		if (!IsEmptyData(csvFileData[i][5]))
 		{
 			// カラーコードに変換
-			std::string color = "0x" + csvFileData[i][5];
+			const std::string color = "0x" + csvFileData[i][5];
 
 			tempTakeData.fontColor = std::stoi(color, nullptr, 16);
 		}
 
-		// 文字を震わせるかどうか
+		// フォントの透明度
 		if (!IsEmptyData(csvFileData[i][6]))
 		{
-			tempTakeData.isShake = EvoLib::Convert::ConvertStringToBool(csvFileData[i][6]);
+			tempTakeData.fontAlpha = std::stoi(csvFileData[i][6]);
+		}
+
+		// フォントの文字サイズタイプ
+		if (!IsEmptyData(csvFileData[i][7]))
+		{
+			tempTakeData.fontSizeType = std::stoi(csvFileData[i][7]);
+		}
+
+		// 文字を震わせるかどうか
+		if (!IsEmptyData(csvFileData[i][8]))
+		{
+			tempTakeData.isShake = EvoLib::Convert::ConvertStringToBool(csvFileData[i][8]);
 		}
 
 		// 一文字を表示するのにかかるフレーム数
-		if (!IsEmptyData(csvFileData[i][7]))
+		if (!IsEmptyData(csvFileData[i][9]))
 		{
-			tempTakeData.drawCharFrame = std::stoi(csvFileData[i][7]);
+			tempTakeData.drawCharFrame = std::stoi(csvFileData[i][9]);
 		}
 
 		// フォントタイプ
-		if (!IsEmptyData(csvFileData[i][8]))
+		if (!IsEmptyData(csvFileData[i][10]))
 		{
-			tempTakeData.fontType = std::stoi(csvFileData[i][8]);
+			tempTakeData.fontType = std::stoi(csvFileData[i][10]);
 		}
 
 		// 文字横間隔
-		if (!IsEmptyData(csvFileData[i][9]))
+		if (!IsEmptyData(csvFileData[i][11]))
 		{
-			tempTakeData.charInterval = std::stoi(csvFileData[i][9]);
+			tempTakeData.charInterval = std::stoi(csvFileData[i][11]);
 		}
 
 		// 文字縦間隔
-		if (!IsEmptyData(csvFileData[i][10]))
+		if (!IsEmptyData(csvFileData[i][12]))
 		{
-			tempTakeData.lineInterval = std::stof(csvFileData[i][10]);
+			tempTakeData.lineInterval = std::stof(csvFileData[i][12]);
 		}
 
 		// キャラクター名カラー
-		if (!IsEmptyData(csvFileData[i][11]))
+		if (!IsEmptyData(csvFileData[i][13]))
 		{
 			// カラーコードに変換
-			std::string color = "0x" + csvFileData[i][11];
+			const std::string color = "0x" + csvFileData[i][13];
 
 			tempTakeData.characterNameColor = std::stoi(color, nullptr, 16);
 		}
 
-		if (12 >= size)
+		if (14 >= size)
 		{
 			// キャラクター名
 			tempTakeData.characterName = m_loadData.characterData.characterName[tempTakeData.talkCharacterNo];
@@ -385,9 +412,9 @@ void MessageTextLoader::LoadTalkData()
 		else
 		{
 			// キャラクター名
-			if (!IsEmptyData(csvFileData[i][12]))
+			if (!IsEmptyData(csvFileData[i][14]))
 			{
-				tempTakeData.characterName = csvFileData[i][12].c_str();
+				tempTakeData.characterName = csvFileData[i][14].c_str();
 			}
 			else
 			{

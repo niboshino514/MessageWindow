@@ -42,20 +42,52 @@ MessageWindow::MessageWindow():
 	m_textInfo(),
 	m_windowInfo(),
 	m_characterInfo(),
+	m_moveSpeed(),
+	m_graphNotSpeakAlpha(),
 	m_pMessageTextLoader(std::make_shared<MessageTextLoader>())
 {
 }
 
 MessageWindow::~MessageWindow()
 {
-	// フォントの削除
-	for (auto& font : m_textInfo.fontHandle)
-	{
-		DeleteFontToHandle(font);
-	}
+	// データのアンロード
+	UnloadData();
 }
 
 void MessageWindow::Init()
+{
+	// データのロード
+	LoadData();
+}
+
+void MessageWindow::Update()
+{
+	// テキスト処理の呼び出し
+	UpdateTextDisplay();
+
+	// テキストを切り替える処理
+	UpdateTextOnInput();
+
+	// キャラクターの更新処理
+	UpdateCharacterPos();
+}
+
+void MessageWindow::Draw()
+{
+	// キャラクターの描画
+	DrawCharacter();
+
+	// メッセージウィンドウの描画
+	DrawMessageWindow();
+
+	// メッセージテキストの描画
+	DrawMessageText();
+
+	// キャラクター名の描画
+	DrawCharacterNameText();
+}
+
+void MessageWindow::LoadData()
 {
 	// ロードデータ
 	const MessageTextLoader::LoadData loadData = m_pMessageTextLoader->LoadTextData();
@@ -63,7 +95,7 @@ void MessageWindow::Init()
 	// 会話情報
 	{
 		// 会話データのサイズ
-		const int talkDataSize = loadData.talkData.size();
+		const int talkDataSize = static_cast<int>(loadData.talkData.size());
 
 		// 会話データのサイズ分、要素を追加
 		m_messageElement.resize(talkDataSize);
@@ -88,6 +120,18 @@ void MessageWindow::Init()
 
 			// テキストのフォントカラー
 			m_messageElement[i].fontColor = loadData.talkData[i].fontColor;
+
+			// フォントの透明度
+			{
+				// 透明度パーセンテージ
+				const float percentage = 100.0f - loadData.talkData[i].fontAlpha;
+				// 透明度を設定
+				m_messageElement[i].fontAlpha = EvoLib::Convert::ConvertFromPercentToValue(255, percentage);
+			}
+
+			// フォントの文字サイズタイプ
+			m_messageElement[i].fontSizeType = FontSize(loadData.talkData[i].fontSizeType);
+
 
 			// 文字を震わせるかどうか
 			m_messageElement[i].isShake = loadData.talkData[i].isShake;
@@ -140,8 +184,8 @@ void MessageWindow::Init()
 		m_windowInfo.nameLeftTop.x = m_windowInfo.leftTop.x;
 		m_windowInfo.nameLeftTop.y = m_windowInfo.leftTop.y - characterNameFontSize;
 
-		
-		
+
+
 		m_windowInfo.nameWindowWidth = (loadData.fontData.characterNameCharInterval + characterNameFontSize) * (loadData.fontData.characterNameMaxCharCount + 1);
 
 		m_windowInfo.nameRightBottom.x = m_windowInfo.nameLeftTop.x + m_windowInfo.nameWindowWidth;
@@ -172,16 +216,33 @@ void MessageWindow::Init()
 
 		// フォント関連
 		{
-			// フォントサイズを取得
-			m_textInfo.fontSize = loadData.fontData.fontSize;
+			// 通常フォントサイズを取得
+			m_textInfo.normalFontSize = loadData.fontData.normalFontSize;
+			// 小さいフォントサイズを取得
+			m_textInfo.smallFontSize = loadData.fontData.smallFontSize;
+			// 大きいフォントサイズを取得
+			m_textInfo.bigFontSize = loadData.fontData.bigFontSize;
 
+			// フォントデータのサイズ
+			const int fontDataSize = static_cast<int>(loadData.fontData.fontFilePath.size());
+
+			// フォントハンドルのサイズを設定
+			m_textInfo.fontHandle.resize(fontDataSize);
 
 			// フォントの数だけループ
-			for (int i = 0; i < loadData.fontData.fontFilePath.size(); i++)
+			for (int i = 0; i < fontDataSize; i++)
 			{
-				// フォントの保存
-				m_textInfo.fontHandle.push_back
-				(EvoLib::Load::LoadFont(loadData.fontData.fontFilePath[i].c_str(), loadData.fontData.fontName[i].c_str(), m_textInfo.fontSize));
+				// 通常フォントサイズのフォントハンドルを取得
+				m_textInfo.fontHandle[i].push_back
+				((EvoLib::Load::LoadFont(loadData.fontData.fontFilePath[i].c_str(), loadData.fontData.fontName[i].c_str(), m_textInfo.normalFontSize)));
+
+				// 小さいフォントサイズのフォントハンドルを取得
+				m_textInfo.fontHandle[i].push_back
+				((EvoLib::Load::LoadFont(loadData.fontData.fontFilePath[i].c_str(), loadData.fontData.fontName[i].c_str(), m_textInfo.smallFontSize)));
+
+				// 大きいフォントサイズのフォントハンドルを取得
+				m_textInfo.fontHandle[i].push_back
+				((EvoLib::Load::LoadFont(loadData.fontData.fontFilePath[i].c_str(), loadData.fontData.fontName[i].c_str(), m_textInfo.bigFontSize)));
 			}
 
 
@@ -195,8 +256,8 @@ void MessageWindow::Init()
 			m_textInfo.characterNameCharInterval = loadData.fontData.characterNameCharInterval;
 
 			// フォントサイズを取得
-			int fontSize = GetDrawStringWidthToHandle("L", 1, m_textInfo.fontHandle[0]);
-			
+			int fontSize = GetDrawStringWidthToHandle("L", 1, m_textInfo.fontHandle[0][0]);
+
 			// テキストの座標を設定
 			m_textInfo.textPos = Vec2(m_windowInfo.leftTop.x + fontSize, m_windowInfo.leftTop.y + fontSize);
 		}
@@ -207,8 +268,8 @@ void MessageWindow::Init()
 		// キャラクターのグラフィックハンドルの取得
 		{
 			// キャラクターデータのサイズ
-			const int characterGraphFilePathSize = loadData.characterData.characterFilePath.size();
-	
+			const int characterGraphFilePathSize = static_cast<int>(loadData.characterData.characterFilePath.size());
+
 			// キャラクター情報のサイズを設定
 			m_characterInfo.resize(characterGraphFilePathSize);
 
@@ -238,7 +299,7 @@ void MessageWindow::Init()
 				m_characterInfo[i].centerPosOffset =
 					Vec2(loadData.characterData.characterAdjustX[i], loadData.characterData.characterAdjustY[i]);
 
-			
+
 			}
 		}
 
@@ -248,7 +309,7 @@ void MessageWindow::Init()
 			// キャラクターの中心座標を設定
 			Vec2 characterCenterPos = Vec2();
 
-			
+
 
 			characterCenterPos.x = Game::kScreenWidth * 0.5f;
 			characterCenterPos.y = (Game::kScreenHeight - loadData.characterData.characterCenterPosOffsetY);
@@ -272,12 +333,17 @@ void MessageWindow::Init()
 			Character::kRightCenterPosHide.x = Character::kRightCenterPos.x + loadData.characterData.characterNotSpeakCenterPosOffsetY;
 			Character::kRightCenterPosHide.y = Character::kRightCenterPos.y + loadData.characterData.characterNotSpeakCenterPosOffsetY;
 		}
-		
+
 		// キャラクターの移動速度を設定
 		m_moveSpeed = kCharcterMoveSpeed;
-	
+
 		// キャラクターの透明度を設定
-		m_graphNotSpeakAlpha= EvoLib::Convert::ConvertFromPercentToValue(255, loadData.characterData.characterNotSpeakAlphaPercentage);
+		{
+			// キャラクターが話していない時の画像の透明度パーセンテージ
+			const float percentage = 100.0f - loadData.characterData.characterNotSpeakAlphaPercentage;
+			// キャラクターが話していない時の画像の透明度を設定
+			m_graphNotSpeakAlpha = EvoLib::Convert::ConvertFromPercentToValue(255, percentage);
+		}
 
 
 		// 一番はじめに表示するキャラクターの座標を設定
@@ -285,30 +351,47 @@ void MessageWindow::Init()
 	}
 }
 
-void MessageWindow::Update()
+void MessageWindow::UnloadData()
 {
-	// テキスト処理の呼び出し
-	UpdateTextDisplay();
+	// グラフィックハンドルの解放
+	{
+		// キャラクター情報のサイズ
+		const int characterInfoSize = static_cast<int>(m_characterInfo.size());
 
-	// テキストを切り替える処理
-	UpdateTextOnInput();
+		// キャラクター情報のサイズだけループ
+		for (int i = 0; i < characterInfoSize; i++)
+		{
+			// グラフィックハンドルのサイズ
+			const int graphicHandleSize = static_cast<int>(m_characterInfo[i].graphicHandle.size());
 
-	// キャラクターの更新処理
-	UpdateCharacter();
-}
+			// グラフィックハンドルのサイズだけループ
+			for (int j = 0; j < graphicHandleSize; j++)
+			{
+				// グラフィックハンドルの解放
+				DeleteGraph(m_characterInfo[i].graphicHandle[j]);
+			}
+		}
+	}
 
-void MessageWindow::Draw()
-{
-	// キャラクターの描画
-	DrawCharacter();
+	// フォントハンドルの解放
+	{
+		// フォントデータのサイズ
+		const int fontDataSize = static_cast<int>(m_textInfo.fontHandle.size());
 
-	// メッセージウィンドウの描画
-	DrawMessageWindow();
+		// フォントデータのサイズだけループ
+		for (int i = 0; i < fontDataSize; i++)
+		{
+			// フォントハンドルのサイズ
+			const int fontHandleSize = static_cast<int>(m_textInfo.fontHandle[i].size());
 
-
-	DrawMessageText();
-
-	DrawCharacterNameText();
+			// フォントハンドルのサイズだけループ
+			for (int j = 0; j < fontHandleSize; j++)
+			{
+				// フォントハンドルの解放
+				DeleteFontToHandle(m_textInfo.fontHandle[i][j]);
+			}
+		}
+	}
 }
 
 void MessageWindow::UpdateTextDisplay()
@@ -319,6 +402,7 @@ void MessageWindow::UpdateTextDisplay()
 		return;
 	}
 
+	// 文字列を早く描画するフラグが立っていない場合、フレームカウントを減らす
 	if (!m_textInfo.isFastDraw)
 	{
 		// フレームカウントを減らす
@@ -343,10 +427,13 @@ void MessageWindow::UpdateTextDisplay()
 	// バイト数をカウント
 	int currentByte = 0;
 
+	// 文字列のバイト数をカウント
 	for (int i = 0; i < m_textInfo.dispCharCount; i++)
 	{
-		const int tempSize = m_textInfo.m_temp.size();
+		// 文字列のバイト数をカウント
+		const int tempSize = static_cast<int>(m_textInfo.m_temp.size());
 
+		// 文字列のバイト数を超えた場合、処理を終了する
 		if (currentByte >= m_textInfo.m_temp.size())
 		{
 			m_textInfo.isEndText = true;
@@ -357,16 +444,9 @@ void MessageWindow::UpdateTextDisplay()
 			break;
 		}
 
+		// 文字データを取得
 		unsigned char charData = m_textInfo.m_temp[currentByte]; 
 		
-
-	
-
-		
-
-	
-
-
 		// チェックする文字
 		if (charData == '\\')
 		{
@@ -390,6 +470,7 @@ void MessageWindow::UpdateTextOnInput()
 {
 	if (Pad::isTrigger(PAD_INPUT_10))
 	{
+		// 文章の表示が終わっていた場合、処理を終了する
 		if (m_textInfo.isEndText)
 		{
 			// 初期化
@@ -427,27 +508,36 @@ void MessageWindow::UpdateTextOnInput()
 void MessageWindow::DrawMessageText()
 {
 
+	// 現在のテキスト番号
+	const int currentNumber = m_textInfo.currentNumber;
+
 	// テキストの座標
 	Vec2 textPos = m_textInfo.textPos;
 
 	int currentByte = 0;
 
 	// フォント番号
-	const int fontNumber = m_messageElement[m_textInfo.currentNumber].fontType;
+	const int fontNumber = m_messageElement[currentNumber].fontType;
 
 	// フォントハンドルの決定（例：特定の文字位置でフォントを変更する）
-	const int fontHandle = m_textInfo.fontHandle[fontNumber];
+	const int fontHandle = m_textInfo.fontHandle[fontNumber][static_cast<int>(m_messageElement[currentNumber].fontSizeType)];
 
 	// テキストの色
-	const int color = m_messageElement[m_textInfo.currentNumber].fontColor;
+	const int color = m_messageElement[currentNumber].fontColor;
 
 	// 行間
-	const float lineSpace = m_textInfo.fontSize * m_messageElement[m_textInfo.currentNumber].lineInterval; // 行間
+	const float lineSpace = m_textInfo.normalFontSize * m_messageElement[currentNumber].lineInterval; // 行間
 
 	// 改行したかどうか
 	bool isLineBreak = false;
 
 	bool isLineBreak_test = false;
+
+
+
+	// 描画ブレンドモードをアルファブレンドにする
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, m_messageElement[currentNumber].fontAlpha);
+
 
 	for (int i = 0; i < m_textInfo.dispCharCount; i++)
 	{
@@ -487,7 +577,7 @@ void MessageWindow::DrawMessageText()
 			if (i != 0 && !isLineBreak)
 			{
 				// テキストの横幅を追加
-				textPos.x += m_messageElement[m_textInfo.currentNumber].charInterval;
+				textPos.x += m_messageElement[currentNumber].charInterval;
 			}
 		}
 		
@@ -505,7 +595,7 @@ void MessageWindow::DrawMessageText()
 		int shakeY = GetRand(2) - 1;
 
 		// テキストの揺れを設定
-		if (!m_messageElement[m_textInfo.currentNumber].isShake)
+		if (!m_messageElement[currentNumber].isShake)
 		{
 			shakeX = 0;
 			shakeY = 0;
@@ -514,6 +604,9 @@ void MessageWindow::DrawMessageText()
 		Vec2 shakePos = textPos;
 		shakePos.x += shakeX;
 		shakePos.y += shakeY;
+
+
+
 
 		// 文字列の描画
 		DrawStringFToHandle(shakePos.x, shakePos.y, m_textInfo.m_temp.substr(currentByte, size).c_str(), color, fontHandle);
@@ -526,6 +619,9 @@ void MessageWindow::DrawMessageText()
 		isLineBreak = false;
 		isLineBreak_test = false;
 	}
+
+	// 描画ブレンドモードをノーブレンドにする
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 }
 
 void MessageWindow::DrawCharacterNameText()
@@ -556,7 +652,7 @@ void MessageWindow::DrawCharacterNameText()
 	nameWindowCenterPos.x = m_windowInfo.nameLeftTop.x + (m_windowInfo.nameWindowWidth * 0.5f);
 	nameWindowCenterPos.y = m_windowInfo.nameLeftTop.y;
 
-	float textWidth = GetDrawStringWidthToHandle(temp.c_str(), dispCharCount, fontHandle);
+	float textWidth = static_cast<float>(GetDrawStringWidthToHandle(temp.c_str(), dispCharCount, fontHandle));
 	textWidth *= 1.1f;
 
 
@@ -613,13 +709,15 @@ bool MessageWindow::IsTextInWindow(const Vec2 textPos, const int fontHandle)
 	const int fontSize = GetFontSizeToHandle(fontHandle);
 
 	// テキストの右端座標を計算
-	const float textRightPos = textPos.x + fontSize;
+	const float textRightPos = textPos.x + (fontSize*2);
 
 	// テキストの右端座標がウィンドウの右端座標を超えている場合、trueを返す
 	if (m_windowInfo.rightBottom.x <= textRightPos)
 	{
 		return true;	
 	}
+
+	
 
 	return false;
 }
@@ -745,7 +843,7 @@ void MessageWindow::SetUpCharacterPos(const bool& isRightDraw, const int& charac
 	m_characterInfo[characterNumber].isRightDraw = isRightDraw;
 }
 
-void MessageWindow::UpdateCharacter()
+void MessageWindow::UpdateCharacterPos()
 {
 
 	// キャラクター番号
@@ -797,7 +895,16 @@ void MessageWindow::DrawCharacter()
 	
 
 	// キャラクターの描画
-	DrawRotaGraph(m_characterInfo[characterNumber].pos.x, m_characterInfo[characterNumber].pos.y, m_characterInfo[characterNumber].scale, 0.0, m_characterInfo[characterNumber].graphicHandle[m_messageElement[m_textInfo.currentNumber].talkFaceNo], true, isGraphReverse);
+	DrawRotaGraphF
+	(
+		m_characterInfo[characterNumber].pos.x,
+		m_characterInfo[characterNumber].pos.y,
+		m_characterInfo[characterNumber].scale,
+		0.0, 
+		m_characterInfo[characterNumber].graphicHandle[m_messageElement[m_textInfo.currentNumber].talkFaceNo],
+		true, 
+		isGraphReverse
+	);
 	
 
 	// 半透明にして描画
@@ -828,6 +935,11 @@ void MessageWindow::DrawCharacter()
 					int number = m_messageElement[i].talkCharacterNo;
 
 					
+					if (characterNumber == number)
+					{
+						continue;
+					}
+
 					if(isRightDraw == m_characterInfo[number].isRightDraw)
 					{
 						continue;
@@ -839,7 +951,16 @@ void MessageWindow::DrawCharacter()
 
 
 
-					DrawRotaGraph(m_characterInfo[number].pos.x, m_characterInfo[number].pos.y, m_characterInfo[number].scale, 0.0, m_characterInfo[number].graphicHandle[m_messageElement[i].talkFaceNo], true, isGraphReverse);
+					DrawRotaGraphF
+					(
+						m_characterInfo[number].pos.x, 
+						m_characterInfo[number].pos.y, 
+						m_characterInfo[number].scale, 
+						0.0, 
+						m_characterInfo[number].graphicHandle[m_messageElement[i].talkFaceNo],
+						true, 
+						isGraphReverse
+					);
 
 					// 描画ブレンドモードをノーブレンドにする
 					SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -851,12 +972,28 @@ void MessageWindow::DrawCharacter()
 		else
 		{
 
+ 			if (characterNumber == characterBeforeNumber)
+			{
+				return;
+			}
+
+
 			isGraphReverse = IsFlipCharacter(characterBeforeNumber, beforeTextNumber);
 
 			// 描画ブレンドモードをアルファブレンド
 			SetDrawBlendMode(DX_BLENDMODE_ALPHA, m_graphNotSpeakAlpha);
 
-			DrawRotaGraph(m_characterInfo[characterBeforeNumber].pos.x, m_characterInfo[characterBeforeNumber].pos.y, m_characterInfo[characterBeforeNumber].scale, 0.0, m_characterInfo[characterBeforeNumber].graphicHandle[m_messageElement[beforeTextNumber].talkFaceNo], true, isGraphReverse);
+			// キャラクターの描画
+			DrawRotaGraphF
+			(
+				m_characterInfo[characterBeforeNumber].pos.x, 
+				m_characterInfo[characterBeforeNumber].pos.y, 
+				m_characterInfo[characterBeforeNumber].scale,
+				0.0, 
+				m_characterInfo[characterBeforeNumber].graphicHandle[m_messageElement[beforeTextNumber].talkFaceNo], 
+				true, 
+				isGraphReverse
+			);
 
 			// 描画ブレンドモードをノーブレンドにする
 			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -902,4 +1039,6 @@ bool MessageWindow::IsFlipCharacter(const int& characterNumber, const int& textN
 			return true;
 		}
 	}
+
+	return false;
 }
